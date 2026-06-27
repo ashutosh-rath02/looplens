@@ -93,9 +93,9 @@ This repo is being built phase by phase (see `PRD.md` section 24).
 - [x] **Phase 1** — FastAPI backend + SQLite + API routes + metrics
 - [x] **Phase 2** — Python SDK (`trace` / `event` / `@observe`, background sender, JSONL fallback)
 - [x] **Phase 3** — CLI (`init / server / ui / dev / watch / import / export / demo`)
+- [x] **Phase 6** — loop detection rules (repeated tool, similar input, no-progress, retry storm, long step, cost spike)
 - [ ] **Phase 4** — React UI
 - [ ] **Phase 5** — real-time streaming
-- [ ] **Phase 6** — loop detection rules
 - [ ] **Phase 7** — polish, examples, demo
 
 ## Running the backend today (Phase 1)
