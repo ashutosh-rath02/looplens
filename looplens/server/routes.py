@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import StreamingResponse
 
 from .. import __version__
 from . import db
 from .detectors import run_detectors
 from .metrics import compute_metrics
 from .models import EventIn, EventOut, MetricsOut, RunCreate, RunOut, RunSummary, WarningOut
+from .websocket import sse_run_stream
 
 router = APIRouter(prefix="/api")
 
@@ -86,6 +88,16 @@ def get_run_metrics(run_id: str) -> MetricsOut:
         if row is None:
             raise HTTPException(status_code=404, detail="run not found")
         return compute_metrics(conn, row)
+
+
+@router.get("/runs/{run_id}/stream")
+async def stream_run(run_id: str, request: Request) -> StreamingResponse:
+    """Server-Sent Events: live events, metrics, and warnings for a run."""
+    return StreamingResponse(
+        sse_run_stream(run_id, request),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 # --- events ----------------------------------------------------------------
