@@ -1,15 +1,19 @@
 """LoopLens FastAPI application (PRD section 20).
 
-Single local process: serves the JSON API (and, from Phase 4, the built React UI
-as static files) so a developer only ever opens one URL.
+Single local process: serves the JSON API + SSE stream and, when the UI has been
+built, the React bundle as static files — so a developer only opens one URL.
 """
 
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from .. import __version__
 from .db import init_db
@@ -35,14 +39,48 @@ app.add_middleware(
 app.include_router(router)
 
 
-@app.get("/")
-def root() -> dict:
-    return {
-        "name": "LoopLens",
-        "version": __version__,
-        "docs": "/docs",
-        "health": "/api/health",
-    }
+def _ui_dist() -> Path | None:
+    override = os.environ.get("LOOPLENS_UI_DIST")
+    candidates = [Path(override)] if override else []
+    candidates += [
+        Path(__file__).resolve().parents[2] / "ui" / "dist",  # repo checkout
+        Path.cwd() / "ui" / "dist",
+    ]
+    for c in candidates:
+        if c.is_dir() and (c / "index.html").is_file():
+            return c
+    return None
+
+
+_DIST = _ui_dist()
+
+if _DIST is not None:
+    app.mount("/assets", StaticFiles(directory=_DIST / "assets"), name="assets")
+
+    @app.get("/")
+    def _index() -> FileResponse:
+        return FileResponse(_DIST / "index.html")
+
+    @app.get("/{full_path:path}")
+    def _spa(full_path: str) -> FileResponse:
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="not found")
+        candidate = _DIST / full_path
+        if candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(_DIST / "index.html")  # client-side routing fallback
+
+else:
+
+    @app.get("/")
+    def root() -> dict:
+        return {
+            "name": "LoopLens",
+            "version": __version__,
+            "docs": "/docs",
+            "health": "/api/health",
+            "ui": "not built — run `npm --prefix ui install && npm --prefix ui run build`",
+        }
 
 
 def run_server(host: str = "127.0.0.1", port: int = 8765) -> None:

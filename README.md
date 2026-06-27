@@ -94,20 +94,24 @@ This repo is being built phase by phase (see `PRD.md` section 24).
 - [x] **Phase 2** — Python SDK (`trace` / `event` / `@observe`, background sender, JSONL fallback)
 - [x] **Phase 3** — CLI (`init / server / ui / dev / watch / import / export / demo`)
 - [x] **Phase 6** — loop detection rules (repeated tool, similar input, no-progress, retry storm, long step, cost spike)
+- [x] **Phase 4** — React UI (runs list, run detail, live timeline, metrics bar, warnings, event drawer)
 - [x] **Phase 5** — real-time streaming (SSE: live events + metrics + warnings)
-- [ ] **Phase 4** — React UI
 - [ ] **Phase 7** — polish, examples, demo
 
-## Running the backend today (Phase 1)
+## Running from source
 
 ```bash
-pip install -e ".[server]"
-python -m looplens.server        # or: looplens server
-curl http://localhost:8765/api/health
-# {"status":"healthy","service":"looplens","version":"0.1.0"}
+pip install -e ".[server]"            # backend + CLI
+npm --prefix ui install               # one-time UI deps
+npm --prefix ui run build             # build the React bundle into ui/dist
+python -m looplens.server             # or: looplens server  (serves API + UI)
+looplens demo                         # seed a looping run that trips warnings
 ```
 
-Interactive API docs are at `http://localhost:8765/docs`.
+Open `http://localhost:8765` for the dashboard. The backend serves the built UI,
+so it's a single URL. For UI development with hot reload, run `npm --prefix ui run
+dev` (Vite on :5173, proxies `/api` to the backend). Interactive API docs are at
+`http://localhost:8765/docs`.
 
 ## License
 
