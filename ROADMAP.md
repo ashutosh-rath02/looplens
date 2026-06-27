@@ -13,15 +13,19 @@ events (so interleaved ReAct traces trip it — confirmed on a live OpenAI run),
 and the **handoff-bounce** detector (PRD §17 Rule 7) catches A→B→A→B agent
 oscillation.
 
+Also shipped: **CI** (`.github/workflows/ci.yml`) — a Python 3.10–3.13 matrix
+running `pytest` plus a UI build check — and a **release workflow**
+(`.github/workflows/release.yml`) that builds the UI, builds the wheel (UI
+force-bundled), verifies the bundle is inside the wheel, and publishes to PyPI
+on a `v*` tag via trusted publishing.
+
 ## Now → next (the immediate backlog)
 
 These are the smallest steps that most increase adoption.
 
-- **Publish to PyPI.** Ship the wheel (UI already bundled — `pip install
-  "looplens[server]"` needs no Node). Add a release workflow that runs
-  `npm --prefix ui run build` then `python -m build` and uploads on tag.
-- **CI.** GitHub Actions matrix (3.10–3.13) running `pytest`, plus a UI build
-  check. Gate releases on green.
+- **Finish the PyPI release.** Workflow is in place; remaining one-time setup:
+  register the project on PyPI and configure the `pypi` environment for trusted
+  publishing (OIDC), then cut the first tag (`git tag v0.1.0 && git push --tags`).
 - **Auto-open the browser** on `looplens dev` (with a `--no-open` flag).
 - **More README screenshots.** The live-loop demo GIF is embedded
   (`docs/media/`); add static stills of the run detail (warning cards) and the

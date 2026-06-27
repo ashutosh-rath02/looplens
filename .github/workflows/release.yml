@@ -1,0 +1,53 @@
+name: Release
+
+# Publishes to PyPI when you push a version tag, e.g. `git tag v0.1.0 && git push --tags`.
+# The UI is built first and force-included into the wheel (see pyproject `artifacts`),
+# so the published package installs with zero Node.
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    name: Build wheel + sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - name: Build UI bundle into looplens/server/_ui
+        run: |
+          npm --prefix ui ci
+          npm --prefix ui run build
+          test -f looplens/server/_ui/index.html
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build distributions
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Verify the wheel bundles the UI
+        run: |
+          python -m zipfile -l dist/*.whl | grep -q "looplens/server/_ui/index.html"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write  # trusted publishing (OIDC) — no API token stored
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
