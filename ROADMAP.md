@@ -15,8 +15,9 @@ These are the smallest steps that most increase adoption.
 - **CI.** GitHub Actions matrix (3.10–3.13) running `pytest`, plus a UI build
   check. Gate releases on green.
 - **Auto-open the browser** on `looplens dev` (with a `--no-open` flag).
-- **Screenshots + demo GIF in the README.** Live timeline filling in, a warning
-  card firing, the health score dropping.
+- **More README screenshots.** The live-loop demo GIF is embedded
+  (`docs/media/`); add static stills of the run detail (warning cards) and the
+  event drawer for users who don't autoplay GIFs.
 - **`looplens doctor`** — one command that checks the port, the SDK→server
   round-trip, and the JSONL fallback path, so onboarding never silently fails.
 

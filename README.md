@@ -14,6 +14,15 @@ LoopLens gives you:
 - JSONL import/export
 - a local-first UI — no login, no cloud, no API key
 
+## See it in action
+
+A looping agent calls `web_search` over and over. As events stream in live, the
+metrics climb and LoopLens flags **Repeated tool call** and **No-progress loop**
+— the warning counts track the repeat count in real time, and the health score
+drops to *Warning*.
+
+![LoopLens detecting a loop live](docs/media/looplens-live-loop-detection.gif)
+
 ## Drop it into any project
 
 LoopLens is **not a standalone app you rebuild your agent inside**. It's a tiny
