@@ -25,9 +25,22 @@ Mapping:
 
 from __future__ import annotations
 
+import re
 import time
 from typing import Any
 from uuid import UUID
+
+# LangGraph / CrewAI implement agent handoffs as `transfer_to_<agent>` (or
+# `handoff_to_<agent>`) tool calls. Matching that, rather than every node
+# transition, avoids flagging a normal ReAct agent<->tools loop as a bounce.
+_HANDOFF_RE = re.compile(r"^(?:transfer|handoff)(?:_back)?_to_(.+)$", re.IGNORECASE)
+
+
+def _handoff_target(tool_name: str | None) -> str | None:
+    if not tool_name:
+        return None
+    m = _HANDOFF_RE.match(tool_name)
+    return m.group(1) if m else None
 
 try:
     from langchain_core.callbacks.base import BaseCallbackHandler
@@ -172,6 +185,9 @@ class LoopLensCallbackHandler(BaseCallbackHandler):
         self._tool_starts[run_id] = time.monotonic()
         self._tool_names[run_id] = name
         self._emit("tool_call_started", tool=name, input=inputs or {"input": input_str})
+        target = _handoff_target(name)
+        if target:
+            self._emit("handoff_started", agent=target, metadata={"via": name})
 
     def on_tool_end(self, output, *, run_id, parent_run_id=None, **kw):
         start = self._tool_starts.pop(run_id, None)

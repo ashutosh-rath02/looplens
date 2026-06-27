@@ -55,15 +55,21 @@ covers the long tail of frameworks at once.
 in-process integration; captures every node's LLM and tool calls (plus run
 boundary, tokens, latencies). Install with `pip install "looplens[langgraph]"`.
 
+**Shipped — handoff capture.** Both the OTel mapper and the LangGraph adapter
+recognise `transfer_to_<agent>` / `handoff_to_<agent>` tool calls (the LangGraph
+supervisor/swarm and CrewAI convention) and emit `handoff_started` events, so
+`handoff_bounce` fires on agent oscillation. Matching the transfer-tool
+convention — not every node transition — keeps a normal ReAct `agent`↔`tools`
+loop from looking like a bounce.
+
 Next, in order:
 
 1. **OpenAI Agents SDK** — consume its tracing hooks (tool calls, handoffs,
    guardrails) directly, for richer signal than the generic OTel spans.
 2. **CrewAI** — capture crew handoffs and task timelines (where repetition hides).
 3. **AutoGen** and **Pydantic AI** adapters.
-4. **Map agent/node transitions → handoff events** (both the OTel mapper and the
-   LangGraph adapter) so `handoff_bounce` fires on graph/agent oscillation; today
-   they capture LLM/tool calls, not yet node-to-node handoffs.
+4. **Arbitrary node-to-node handoffs** — map graph node transitions (beyond the
+   transfer-tool convention) to handoff events without flagging healthy loops.
 
 Also in V1:
 

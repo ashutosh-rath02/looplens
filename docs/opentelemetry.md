@@ -71,7 +71,8 @@ instrumentations of LangChain, LlamaIndex, CrewAI, AutoGen, and others — LoopL
 just ingests the spans.
 
 !!! note "Handoffs"
-    The OTel mapper captures LLM and tool spans today, not yet agent/node
-    transitions, so the [`handoff_bounce`](detectors.md) detector won't fire
-    through this path. Mapping agent-span transitions to handoff events is on
-    the [roadmap](roadmap.md).
+    Agent handoffs expressed as `transfer_to_<agent>` / `handoff_to_<agent>` tool
+    spans (the LangGraph supervisor/swarm and CrewAI convention) are mapped to
+    `handoff_started` events, so the [`handoff_bounce`](detectors.md) detector
+    fires through this path. Arbitrary node-to-node transitions are not yet
+    treated as handoffs.

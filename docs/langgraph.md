@@ -50,6 +50,7 @@ PYTHONPATH=. python examples/langgraph_agent.py
 ```
 
 !!! note "Handoffs"
-    The adapter captures LLM and tool calls today, not yet node-to-node
-    handoffs, so the [`handoff_bounce`](detectors.md) detector won't fire on
-    graph oscillation through this path. It's on the [roadmap](roadmap.md).
+    `transfer_to_<agent>` tool calls (the LangGraph supervisor/swarm handoff
+    convention) are also emitted as `handoff_started` events, so the
+    [`handoff_bounce`](detectors.md) detector fires when agents ping-pong. A
+    normal ReAct `agent`↔`tools` loop is **not** treated as a handoff.

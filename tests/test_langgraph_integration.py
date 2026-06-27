@@ -75,6 +75,21 @@ def test_only_root_chain_opens_and_closes_the_run(recorder):
     assert types(recorder) == ["run_started", "run_completed"]
 
 
+def test_transfer_tools_emit_handoff_events(recorder):
+    # `transfer_to_<agent>` tool calls are agent handoffs; regular tools are not.
+    h = lg.LoopLensCallbackHandler()
+    root = uuid4()
+    h.on_chain_start({}, {}, run_id=root, parent_run_id=None)
+    for name in ["transfer_to_researcher", "search", "transfer_to_planner"]:
+        tid = uuid4()
+        h.on_tool_start({"name": name}, "", run_id=tid, parent_run_id=root)
+        h.on_tool_end("ok", run_id=tid, parent_run_id=root)
+    h.on_chain_end({}, run_id=root, parent_run_id=None)
+
+    handoffs = [kw["agent"] for t, kw in recorder if t == "handoff_started"]
+    assert handoffs == ["researcher", "planner"]  # the plain `search` is not a handoff
+
+
 def test_tool_error_maps_to_failed(recorder):
     h = lg.LoopLensCallbackHandler()
     root, tool = uuid4(), uuid4()

@@ -18,6 +18,7 @@ Two wire formats are supported on ``/v1/traces``:
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -26,6 +27,18 @@ from typing import Any
 from . import db
 from .detectors import run_detectors
 from .ingest import store_event
+
+# Handoffs are conventionally expressed as `transfer_to_<agent>` tool calls
+# (LangGraph supervisor/swarm, CrewAI delegation). Detecting that — not every
+# tool — keeps a normal ReAct loop from looking like an agent bounce.
+_HANDOFF_RE = re.compile(r"^(?:transfer|handoff)(?:_back)?_to_(.+)$", re.IGNORECASE)
+
+
+def _handoff_target(tool_name: str | None) -> str | None:
+    if not tool_name:
+        return None
+    m = _HANDOFF_RE.match(tool_name)
+    return m.group(1) if m else None
 
 
 # --- wire-format parsing ---------------------------------------------------
@@ -229,6 +242,9 @@ def _events_for_span(run_id: str, sp: dict) -> list[tuple[int, dict]]:
         tool = _tool_name(attrs, name)
         out.append((sp["start_ns"], {**base, "type": "tool_call_started", "tool": tool,
                                      "input": _value(attrs, "input.value", "tool.parameters")}))
+        target = _handoff_target(tool)
+        if target:
+            out.append((sp["start_ns"], {**base, "type": "handoff_started", "agent": target}))
         done = {**base, "tool": tool, "latency_ms": latency,
                 "output": _value(attrs, "output.value")}
         if errored:

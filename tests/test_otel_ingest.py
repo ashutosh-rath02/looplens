@@ -125,6 +125,25 @@ def test_late_arriving_root_corrects_run_name(client):
     assert run["status"] == "completed"
 
 
+def test_transfer_tool_spans_trip_handoff_bounce(client):
+    # Alternating transfer_to_* tool spans are an agent handoff bounce.
+    trace = "9" * 32
+    root = "9" * 16
+    spans = [_span(trace, root, "swarm", "CHAIN", 1, 100)]
+    names = ["transfer_to_researcher", "transfer_to_planner",
+             "transfer_to_researcher", "transfer_to_planner"]
+    for i, nm in enumerate(names):
+        spans.append(_span(trace, f"{i:016x}", nm, "TOOL", 10 + i, 12 + i, parent=root,
+                           extra=[_attr("tool.name", stringValue=nm)]))
+
+    assert _post(client, spans).status_code == 200
+    rid = "otel-" + trace
+    warns = {w["type"] for w in client.get(f"/api/runs/{rid}/warnings").json()}
+    assert "handoff_bounce" in warns
+    metrics = client.get(f"/api/runs/{rid}/metrics").json()
+    assert metrics["total_handoffs"] == 4
+
+
 def test_otlp_protobuf_path(client):
     pb = pytest.importorskip("opentelemetry.proto.collector.trace.v1.trace_service_pb2")
     req = pb.ExportTraceServiceRequest()
