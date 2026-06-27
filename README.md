@@ -96,11 +96,14 @@ dependencies**, so it installs cleanly next to any agent stack and pins nothing:
 
 ```bash
 pip install "looplens[server]"
-looplens dev      # start backend + prebuilt UI on http://localhost:8765
+looplens dev      # start backend + prebuilt UI, opens http://localhost:8765
 looplens demo     # run a sample looping agent that trips a warning
+looplens doctor   # check the port, SDK->server round-trip, and JSONL fallback
 ```
 
-Open <http://localhost:8765> and watch the run appear live.
+`looplens dev` opens the dashboard in your browser automatically (pass
+`--no-open` to skip). If it doesn't, open <http://localhost:8765> yourself and
+watch the run appear live.
 
 ## Architecture
 

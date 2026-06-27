@@ -17,7 +17,9 @@ Also shipped: **CI** (`.github/workflows/ci.yml`) — a Python 3.10–3.13 matri
 running `pytest` plus a UI build check — and a **release workflow**
 (`.github/workflows/release.yml`) that builds the UI, builds the wheel (UI
 force-bundled), verifies the bundle is inside the wheel, and publishes to PyPI
-on a `v*` tag via trusted publishing.
+on a `v*` tag via trusted publishing. Plus **`looplens doctor`** (checks the
+port, the SDK→server round-trip, and the JSONL fallback) and **auto-open** of
+the dashboard on `looplens dev` (with `--no-open`).
 
 ## Now → next (the immediate backlog)
 
@@ -26,12 +28,9 @@ These are the smallest steps that most increase adoption.
 - **Finish the PyPI release.** Workflow is in place; remaining one-time setup:
   register the project on PyPI and configure the `pypi` environment for trusted
   publishing (OIDC), then cut the first tag (`git tag v0.1.0 && git push --tags`).
-- **Auto-open the browser** on `looplens dev` (with a `--no-open` flag).
 - **More README screenshots.** The live-loop demo GIF is embedded
   (`docs/media/`); add static stills of the run detail (warning cards) and the
   event drawer for users who don't autoplay GIFs.
-- **`looplens doctor`** — one command that checks the port, the SDK→server
-  round-trip, and the JSONL fallback path, so onboarding never silently fails.
 
 ## V1 — framework adapters (kill manual instrumentation)
 

@@ -5,7 +5,7 @@ install stays dependency-free. Typer is therefore imported lazily, with a clear
 install hint if it is missing.
 
 Commands (PRD section 14.2):
-  init    server    ui    dev    watch    import    export    demo
+  init    server    ui    dev    watch    import    export    demo    doctor
 """
 
 from __future__ import annotations
@@ -141,20 +141,34 @@ def _build_app():
     def dev(
         host: str = typer.Option(None, help="Host to bind (default from config)."),
         port: int = typer.Option(None, help="Port to bind (default from config)."),
+        open_browser: bool = typer.Option(
+            True, "--open/--no-open", help="Open the dashboard in a browser once the server starts."
+        ),
     ) -> None:
-        """Start the backend (and the UI dev server once it exists)."""
+        """Start the backend (and, from a source checkout, the UI dev server)."""
         import subprocess
+        import threading
+        import webbrowser
 
         cfg = get_config()
+        bind_host = host or cfg.host
+        bind_port = port or cfg.port
         ui_proc = None
         if Path("ui/package.json").exists():
+            # Source checkout: Vite serves a hot-reloading UI that proxies to the backend.
             ui_proc = subprocess.Popen(["npm", "--prefix", "ui", "run", "dev"])
+            url = "http://localhost:5173"
         else:
-            typer.echo("UI is not built yet (Phase 4); starting backend only.")
+            # Installed package: the backend serves the bundled UI on its own port.
+            shown_host = "127.0.0.1" if bind_host in ("0.0.0.0", "") else bind_host
+            url = f"http://{shown_host}:{bind_port}"
+        if open_browser:
+            # run_server blocks, so open the page from a timer once it has come up.
+            threading.Timer(1.5, lambda: webbrowser.open(url)).start()
         try:
             from .server.app import run_server
 
-            run_server(host=host or cfg.host, port=port or cfg.port)
+            run_server(host=bind_host, port=bind_port)
         finally:
             if ui_proc is not None:
                 ui_proc.terminate()
@@ -247,6 +261,66 @@ def _build_app():
 
         flush(timeout=5)
         typer.echo("Demo complete. Open the dashboard to inspect the run.")
+
+    @app.command()
+    def doctor() -> None:
+        """Diagnose setup: server reachability, SDK round-trip, JSONL fallback."""
+        import uuid
+
+        cfg = get_config()
+        ok = True
+        typer.echo(f"LoopLens doctor - endpoint {cfg.endpoint}")
+
+        # 1) Is the dashboard server up and healthy?
+        server_up = False
+        health: dict = {}
+        try:
+            health = _get(cfg.endpoint, "/api/health", cfg.timeout)
+            server_up = health.get("status") == "healthy"
+        except (urllib.error.URLError, OSError):
+            server_up = False
+        if server_up:
+            typer.echo(f"  [ok]   server reachable (version {health.get('version', '?')})")
+        else:
+            ok = False
+            typer.echo("  [FAIL] server not reachable - start it with `looplens dev`")
+
+        # 2) SDK -> server round-trip (only meaningful once the server is up).
+        if server_up:
+            if not cfg.enabled:
+                typer.echo("  [warn] LOOPLENS_ENABLED=false - SDK is a no-op; skipped round-trip")
+            else:
+                from .sdk import event, flush, trace
+
+                rid = f"looplens-doctor-{uuid.uuid4().hex[:8]}"
+                with trace("looplens doctor self-test", run_id=rid):
+                    event("tool_call_started", tool="__doctor__", input={"ping": True})
+                    event("tool_call_completed", tool="__doctor__")
+                flush(timeout=5)
+                try:
+                    events = _get(cfg.endpoint, f"/api/runs/{rid}/events", cfg.timeout)
+                except (urllib.error.URLError, OSError):
+                    events = []
+                if events:
+                    typer.echo(f"  [ok]   SDK round-trip - {len(events)} events delivered (run {rid})")
+                else:
+                    ok = False
+                    typer.echo("  [FAIL] SDK round-trip - events were not delivered")
+
+        # 3) JSONL fallback dir is writable (the SDK buffers here when offline).
+        try:
+            trace_dir = Path(cfg.trace_dir)
+            trace_dir.mkdir(parents=True, exist_ok=True)
+            probe = trace_dir / ".doctor-write-test"
+            probe.write_text("ok", encoding="utf-8")
+            probe.unlink()
+            typer.echo(f"  [ok]   JSONL fallback writable ({trace_dir})")
+        except OSError as exc:
+            ok = False
+            typer.echo(f"  [FAIL] JSONL fallback not writable ({cfg.trace_dir}): {exc}")
+
+        typer.echo("All checks passed." if ok else "Some checks failed.")
+        raise typer.Exit(code=0 if ok else 1)
 
     return app
 
