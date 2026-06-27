@@ -1,6 +1,8 @@
 # LoopLens
 
 [![CI](https://github.com/ashutosh-rath02/looplens/actions/workflows/ci.yml/badge.svg)](https://github.com/ashutosh-rath02/looplens/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/looplens.svg)](https://pypi.org/project/looplens/)
+[![Python](https://img.shields.io/pypi/pyversions/looplens.svg)](https://pypi.org/project/looplens/)
 
 **Chrome DevTools for AI agent loops.** A local-first, real-time debugger that
 shows your agent's execution live and warns when it repeats itself, burns
