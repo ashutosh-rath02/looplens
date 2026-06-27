@@ -123,16 +123,17 @@ def ingest_event(body: EventIn) -> EventOut:
             "trace_id": body.trace_id,
             "metadata_json": db.dumps(body.metadata),
         }
-        db.insert_event(conn, row)
-        db.add_run_totals(conn, body.run_id, body.cost or 0, body.tokens or 0)
+        inserted = db.insert_event(conn, row)
+        if inserted:
+            db.add_run_totals(conn, body.run_id, body.cost or 0, body.tokens or 0)
 
-        # Run lifecycle.
-        if body.type in _TERMINAL_STATUS:
-            db.set_run_status(conn, body.run_id, _TERMINAL_STATUS[body.type], timestamp)
+            # Run lifecycle.
+            if body.type in _TERMINAL_STATUS:
+                db.set_run_status(conn, body.run_id, _TERMINAL_STATUS[body.type], timestamp)
 
-        # Loop detection (Phase 6: no-op stub today).
-        for warning in run_detectors(conn, body.run_id):
-            db.insert_warning(conn, warning)
+            # Loop detection (Phase 6: no-op stub today).
+            for warning in run_detectors(conn, body.run_id):
+                db.insert_warning(conn, warning)
 
         stored = conn.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
 

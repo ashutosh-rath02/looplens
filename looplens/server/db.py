@@ -155,9 +155,11 @@ def next_sequence(conn: sqlite3.Connection, run_id: str) -> int:
     return int(row["seq"]) + 1
 
 
-def insert_event(conn: sqlite3.Connection, row: dict) -> None:
-    conn.execute(
-        """INSERT INTO events
+def insert_event(conn: sqlite3.Connection, row: dict) -> bool:
+    """Insert an event. Idempotent on event id; returns True if a new row was
+    written (False if it already existed), so callers don't double-count."""
+    cur = conn.execute(
+        """INSERT OR IGNORE INTO events
            (id, run_id, sequence, timestamp, type, agent, name, status, model, tool,
             input_json, output_json, error_json, tokens, cost, latency_ms,
             parent_event_id, span_id, trace_id, metadata_json)
@@ -166,6 +168,7 @@ def insert_event(conn: sqlite3.Connection, row: dict) -> None:
                    :latency_ms, :parent_event_id, :span_id, :trace_id, :metadata_json)""",
         row,
     )
+    return cur.rowcount > 0
 
 
 def list_events(conn: sqlite3.Connection, run_id: str) -> list[sqlite3.Row]:
