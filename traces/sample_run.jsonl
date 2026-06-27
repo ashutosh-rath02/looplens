@@ -1,0 +1,11 @@
+{"event_id": "evt_0001", "run_id": "run_sample01", "sequence": 1, "timestamp": "2026-06-27T12:00:00Z", "type": "run_started", "name": "looping-research-agent"}
+{"event_id": "evt_0002", "run_id": "run_sample01", "sequence": 2, "timestamp": "2026-06-27T12:00:00Z", "type": "agent_started", "agent": "researcher"}
+{"event_id": "evt_0003", "run_id": "run_sample01", "sequence": 3, "timestamp": "2026-06-27T12:00:01Z", "type": "llm_call_started", "agent": "researcher", "model": "demo-model"}
+{"event_id": "evt_0004", "run_id": "run_sample01", "sequence": 4, "timestamp": "2026-06-27T12:00:02Z", "type": "llm_call_completed", "agent": "researcher", "model": "demo-model", "tokens": 200, "cost": 0.002}
+{"event_id": "evt_0005", "run_id": "run_sample01", "sequence": 5, "timestamp": "2026-06-27T12:00:02Z", "type": "tool_call_started", "tool": "web_search", "input": {"query": "latest AI agent observability tools"}}
+{"event_id": "evt_0006", "run_id": "run_sample01", "sequence": 6, "timestamp": "2026-06-27T12:00:03Z", "type": "tool_call_completed", "tool": "web_search", "output": {"results": []}}
+{"event_id": "evt_0007", "run_id": "run_sample01", "sequence": 7, "timestamp": "2026-06-27T12:00:03Z", "type": "tool_call_started", "tool": "web_search", "input": {"query": "latest AI agent observability tools"}}
+{"event_id": "evt_0008", "run_id": "run_sample01", "sequence": 8, "timestamp": "2026-06-27T12:00:04Z", "type": "tool_call_completed", "tool": "web_search", "output": {"results": []}}
+{"event_id": "evt_0009", "run_id": "run_sample01", "sequence": 9, "timestamp": "2026-06-27T12:00:04Z", "type": "tool_call_started", "tool": "web_search", "input": {"query": "latest AI agent observability tools"}}
+{"event_id": "evt_0010", "run_id": "run_sample01", "sequence": 10, "timestamp": "2026-06-27T12:00:05Z", "type": "tool_call_completed", "tool": "web_search", "output": {"results": []}}
+{"event_id": "evt_0011", "run_id": "run_sample01", "sequence": 11, "timestamp": "2026-06-27T12:00:05Z", "type": "run_completed", "status": "failed"}

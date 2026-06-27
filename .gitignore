@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.env
+
+# LoopLens local data
+*.db
+*.db-wal
+*.db-shm
+.looplens/
+
+# Node / UI
+node_modules/
+ui/dist/
+ui/.vite/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
