@@ -59,6 +59,24 @@ def test_repeated_tool_detected_in_interleaved_react_trace(client):
     assert "repeated_tool_call_similar_input" not in types  # inputs differ -> not similar
 
 
+def test_exact_repeat_detected_for_identical_input(client):
+    # Byte-identical args three times is the high-confidence exact-repeat signal.
+    client.post("/api/runs", json={"id": "ex", "name": "exact"})
+    for _ in range(3):
+        ev(client, "ex", "tool_call_started", tool="fetch", input={"url": "https://a.com"})
+        ev(client, "ex", "tool_call_completed", tool="fetch")
+    assert "repeated_tool_call_exact_input" in warning_types(client, "ex")
+
+
+def test_no_exact_repeat_for_distinct_inputs(client):
+    # Same tool, but every call has different args -> no byte-identical group.
+    client.post("/api/runs", json={"id": "ed", "name": "distinct"})
+    for u in ["https://a.com", "https://b.com", "https://c.com"]:
+        ev(client, "ed", "tool_call_started", tool="fetch", input={"url": u})
+        ev(client, "ed", "tool_call_completed", tool="fetch")
+    assert "repeated_tool_call_exact_input" not in warning_types(client, "ed")
+
+
 def test_handoff_bounce(client):
     client.post("/api/runs", json={"id": "hb", "name": "bounce"})
     for a in ["researcher", "planner", "researcher", "planner"]:

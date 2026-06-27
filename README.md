@@ -187,6 +187,7 @@ every event the backend re-scans the run and raises (or updates) warnings:
 | --- | --- |
 | `repeated_tool_call` | same tool ≥3× within the last 8 **tool calls** (window slides over tool calls, not raw events, so interleaved ReAct traces still trip it) |
 | `repeated_tool_call_similar_input` | same tool ≥3× with ≥85% similar input |
+| `repeated_tool_call_exact_input` | same tool ≥3× with **byte-identical** input — highest-confidence repeat signal |
 | `no_progress` | a tool repeats with no `state_updated` / `memory_write` between calls |
 | `retry_storm` | `retry_triggered` ≥3× in the run |
 | `long_running_step` | a step over 30s |
@@ -209,7 +210,7 @@ Each warning carries a health penalty; the run's score (0–100) maps to
 
 ```bash
 pip install -e ".[dev]"
-pytest -q          # SDK resilience, all seven detectors, and the SSE stream
+pytest -q          # SDK resilience, all eight detectors, and the SSE stream
 ```
 
 ## Roadmap

@@ -17,6 +17,7 @@ from .models import MetricsOut
 WARNING_PENALTIES: dict[str, int] = {
     "repeated_tool_call": 15,
     "repeated_tool_call_similar_input": 20,
+    "repeated_tool_call_exact_input": 25,
     "retry_storm": 20,
     "no_progress": 30,
     "long_running_step": 10,

@@ -8,11 +8,12 @@ matters, and what to try (PRD section 23.2).
 Rules:
   1. repeated_tool_call               — same tool >= 3x within the last 8 tool calls
   2. repeated_tool_call_similar_input — same tool >= 3x with near-identical input
-  3. no_progress                      — tool repeats with no state/memory update
-  4. retry_storm                      — retry_triggered >= 3x in the run
-  5. long_running_step                — a step over the latency threshold
-  6. cost_spike                       — one event dominating run cost
-  7. handoff_bounce                   — two agents handing off back and forth
+  3. repeated_tool_call_exact_input   — same tool >= 3x with byte-identical input
+  4. no_progress                      — tool repeats with no state/memory update
+  5. retry_storm                      — retry_triggered >= 3x in the run
+  6. long_running_step                — a step over the latency threshold
+  7. cost_spike                       — one event dominating run cost
+  8. handoff_bounce                   — two agents handing off back and forth
 """
 
 from __future__ import annotations
@@ -95,6 +96,33 @@ def _similar_input(events):
                 "details": {"tool": t, "count": similar, "threshold": SIMILARITY},
                 "event_id": evs[-1]["id"],
             })
+    return out
+
+
+def _exact_repeat(events):
+    # Byte-identical (tool, normalized args) repeats are the highest-confidence
+    # loop signal short of no_progress: the agent is issuing the literally same
+    # call and expecting a different result. Distinct from _similar_input, which
+    # is fuzzy — this requires an exact normalized-args match, so it almost never
+    # false-positives. Report, per tool, the single worst exact-args group.
+    groups: dict[tuple[str, str], list] = defaultdict(list)
+    for e in events:
+        if e["type"] == "tool_call_started" and _tool(e):
+            groups[(_tool(e), _norm(e["input_json"]))].append(e)
+    worst: dict[str, list] = {}
+    for (t, _args), evs in groups.items():
+        if len(evs) >= REPEAT_THRESHOLD and len(evs) > len(worst.get(t, [])):
+            worst[t] = evs
+    out = []
+    for t, evs in worst.items():
+        out.append({
+            "type": "repeated_tool_call_exact_input", "severity": "warning",
+            "message": (f"'{t}' was called {len(evs)} times with byte-identical input. "
+                        f"Repeating the exact same call returns the exact same result — "
+                        f"cache the result, change the arguments, or break the loop."),
+            "details": {"tool": t, "count": len(evs)},
+            "event_id": evs[-1]["id"],
+        })
     return out
 
 
@@ -194,8 +222,8 @@ def _handoff_bounce(events):
     }]
 
 
-_RULES = (_repeated_tool, _similar_input, _no_progress, _retry_storm, _long_step,
-          _cost_spike, _handoff_bounce)
+_RULES = (_repeated_tool, _similar_input, _exact_repeat, _no_progress, _retry_storm,
+          _long_step, _cost_spike, _handoff_bounce)
 
 
 # --- engine ----------------------------------------------------------------
