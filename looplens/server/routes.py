@@ -7,18 +7,12 @@ from fastapi.responses import StreamingResponse
 
 from .. import __version__
 from . import db
-from .detectors import run_detectors
+from .ingest import store_event
 from .metrics import compute_metrics
 from .models import EventIn, EventOut, MetricsOut, RunCreate, RunOut, RunSummary, WarningOut
 from .websocket import sse_run_stream
 
 router = APIRouter(prefix="/api")
-
-# Event types that move a run out of the "running" state.
-_TERMINAL_STATUS = {
-    "run_completed": "completed",
-    "run_failed": "failed",
-}
 
 
 @router.get("/health")
@@ -105,47 +99,27 @@ async def stream_run(run_id: str, request: Request) -> StreamingResponse:
 @router.post("/events", response_model=EventOut, status_code=201)
 def ingest_event(body: EventIn) -> EventOut:
     with db.connect() as conn:
-        # The SDK creates the run first, but stay forgiving for imports/JSONL.
-        if db.get_run(conn, body.run_id) is None:
-            db.create_run(conn, id=body.run_id, name=body.run_id, project="default")
-
-        event_id = body.event_id or db.gen_id("evt")
-        timestamp = body.timestamp or db.now_iso()
-        sequence = body.sequence if body.sequence is not None else db.next_sequence(conn, body.run_id)
-
-        row = {
-            "id": event_id,
-            "run_id": body.run_id,
-            "sequence": sequence,
-            "timestamp": timestamp,
-            "type": body.type,
-            "agent": body.agent,
-            "name": body.name,
-            "status": body.status,
-            "model": body.model,
-            "tool": body.tool,
-            "input_json": db.dumps(body.input),
-            "output_json": db.dumps(body.output),
-            "error_json": db.dumps(body.error),
-            "tokens": body.tokens,
-            "cost": body.cost,
-            "latency_ms": body.latency_ms,
-            "parent_event_id": body.parent_event_id,
-            "span_id": body.span_id,
-            "trace_id": body.trace_id,
-            "metadata_json": db.dumps(body.metadata),
-        }
-        inserted = db.insert_event(conn, row)
-        if inserted:
-            db.add_run_totals(conn, body.run_id, body.cost or 0, body.tokens or 0)
-
-            # Run lifecycle.
-            if body.type in _TERMINAL_STATUS:
-                db.set_run_status(conn, body.run_id, _TERMINAL_STATUS[body.type], timestamp)
-
-            # Loop detection (raises/updates warnings in place).
-            run_detectors(conn, body.run_id)
-
-        stored = conn.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
-
+        stored, _ = store_event(
+            conn,
+            run_id=body.run_id,
+            type=body.type,
+            event_id=body.event_id,
+            timestamp=body.timestamp,
+            sequence=body.sequence,
+            agent=body.agent,
+            name=body.name,
+            status=body.status,
+            model=body.model,
+            tool=body.tool,
+            input=body.input,
+            output=body.output,
+            error=body.error,
+            tokens=body.tokens,
+            cost=body.cost,
+            latency_ms=body.latency_ms,
+            parent_event_id=body.parent_event_id,
+            span_id=body.span_id,
+            trace_id=body.trace_id,
+            metadata=body.metadata,
+        )
     return EventOut.from_row(stored)

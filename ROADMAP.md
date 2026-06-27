@@ -42,22 +42,28 @@ These are the smallest steps that most increase adoption.
 The biggest friction today is hand-placing `event()` calls. V1 makes LoopLens
 auto-capture from the frameworks people already use (PRD §21).
 
-**Shipped:** **LangGraph / LangChain** — `LoopLensCallbackHandler` (in
-`looplens.integrations.langgraph`) is a LangChain callback handler, so it
-captures every node's LLM and tool calls (plus the run boundary, tokens, and
-latencies) with no manual `event()` calls. Install with
-`pip install "looplens[langgraph]"`.
+**Shipped — universal OpenTelemetry ingestion.** The server exposes an OTLP/HTTP
+receiver at `POST /v1/traces`. Any framework that emits OpenInference /
+OpenLLMetry / `gen_ai.*` spans — LangChain/LangGraph, LlamaIndex, CrewAI,
+AutoGen, the OpenAI Agents SDK, … — streams in by pointing its OTLP exporter at
+LoopLens, with no LoopLens code in the agent. OTLP/JSON needs nothing; OTLP
+/protobuf needs `pip install "looplens[otel]"`. This is the no-lock-in path that
+covers the long tail of frameworks at once.
+
+**Shipped — LangGraph / LangChain adapter.** `LoopLensCallbackHandler` (in
+`looplens.integrations.langgraph`) is a LangChain callback handler for a tighter
+in-process integration; captures every node's LLM and tool calls (plus run
+boundary, tokens, latencies). Install with `pip install "looplens[langgraph]"`.
 
 Next, in order:
 
 1. **OpenAI Agents SDK** — consume its tracing hooks (tool calls, handoffs,
-   guardrails) directly.
+   guardrails) directly, for richer signal than the generic OTel spans.
 2. **CrewAI** — capture crew handoffs and task timelines (where repetition hides).
 3. **AutoGen** and **Pydantic AI** adapters.
-4. **Generic OpenTelemetry / OpenInference import** — avoid vendor lock-in.
-5. **Map LangGraph node transitions → handoff events** so `handoff_bounce` fires
-   on graph oscillation (the current adapter captures LLM/tool calls, not yet
-   node-to-node handoffs).
+4. **Map agent/node transitions → handoff events** (both the OTel mapper and the
+   LangGraph adapter) so `handoff_bounce` fires on graph/agent oscillation; today
+   they capture LLM/tool calls, not yet node-to-node handoffs.
 
 Also in V1:
 

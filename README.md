@@ -146,14 +146,44 @@ OPENAI_API_KEY=sk-... PYTHONPATH=. python examples/real_research_agent_openai.py
 
 `examples/langgraph_agent.py` is the same idea **with zero manual
 instrumentation** — a real LangGraph ReAct agent where LoopLens captures every
-node's LLM and tool calls through one callback handler (see *Framework adapters*
-below). Needs `pip install "looplens[langgraph]" langchain-openai` and
+node's LLM and tool calls through one callback handler (see *Works with any
+framework* below). Needs `pip install "looplens[langgraph]" langchain-openai` and
 `OPENAI_API_KEY`.
 
-## Framework adapters
+`examples/otel_openinference_openai.py` captures a real OpenAI call through
+**OpenTelemetry** — no LoopLens code in the agent, just an OTLP exporter pointed
+at the server. Needs `pip install "looplens[otel]"` plus the OTel SDK and
+instrumentor (see the file header) and `OPENAI_API_KEY`.
 
-Instead of hand-placing `event()` calls, drop in a framework adapter and
-LoopLens auto-captures the run. **LangGraph / LangChain** is supported today:
+## Works with any framework
+
+You don't have to hand-place `event()` calls. There are two zero-instrumentation
+paths, plus the manual SDK.
+
+### 1. Any framework, via OpenTelemetry (universal)
+
+Most agent frameworks — **LangChain/LangGraph, LlamaIndex, CrewAI, AutoGen, the
+OpenAI Agents SDK**, and more — can emit OpenTelemetry spans through the
+[OpenInference](https://github.com/Arize-ai/openinference) or
+[OpenLLMetry](https://github.com/traceloop/openllmetry) instrumentations. Point
+their OTLP/HTTP exporter at the LoopLens server and the spans become runs,
+events, and loop warnings — **no LoopLens-specific code in your agent**:
+
+```python
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+exporter = OTLPSpanExporter(endpoint="http://127.0.0.1:8765/v1/traces")
+# ...register it on your TracerProvider, then instrument your framework as usual.
+```
+
+LoopLens reads whichever convention a span uses (`openinference.*`,
+`traceloop.*`, `gen_ai.*`, `llm.*`), mapping LLM and tool spans to
+`llm_call_*` / `tool_call_*` events with model, token counts, and latencies.
+OTLP/JSON works out of the box; OTLP/protobuf (the common default) needs
+`pip install "looplens[otel]"`. See `examples/otel_openinference_openai.py`.
+
+### 2. LangGraph / LangChain adapter
+
+For a tighter, in-process integration, drop in the callback handler:
 
 ```python
 from looplens.integrations.langgraph import LoopLensCallbackHandler
@@ -162,12 +192,9 @@ handler = LoopLensCallbackHandler(name="my-graph")
 graph.invoke(inputs, config={"callbacks": [handler]})   # that's the whole change
 ```
 
-The handler maps LangChain callbacks to LoopLens events — `on_chat_model_start`
-→ `llm_call_started`, `on_tool_start` → `tool_call_started`, errors →
-`*_failed`, and the root chain's start/end open and close the run (with token
-counts and latencies). It needs `langchain-core` (a LangGraph dependency):
-`pip install "looplens[langgraph]"`. More adapters (OpenAI Agents SDK, CrewAI)
-are on the roadmap.
+It maps LangChain callbacks to LoopLens events (`on_chat_model_start` →
+`llm_call_started`, `on_tool_start` → `tool_call_started`, errors → `*_failed`,
+root chain start/end → run open/close). Needs `pip install "looplens[langgraph]"`.
 
 ## Build status
 
@@ -226,10 +253,11 @@ Each warning carries a health penalty; the run's score (0–100) maps to
 
 ## Limitations (MVP)
 
-- **Mostly manual instrumentation.** A **LangGraph / LangChain** adapter ships
-  today (`looplens.integrations.langgraph`); other framework adapters (OpenAI
-  Agents SDK, CrewAI) are still on the roadmap. Otherwise you call
-  `trace()`/`event()`/`@observe`.
+- **Instrumentation options.** Any framework that emits OpenTelemetry
+  (OpenInference / OpenLLMetry) streams in via `/v1/traces` with no LoopLens
+  code; there's a dedicated **LangGraph / LangChain** adapter; otherwise you call
+  `trace()`/`event()`/`@observe`. Tighter per-framework adapters (OpenAI Agents
+  SDK, CrewAI) are still on the roadmap.
 - **Rule-based detection**, not semantic — similar-input uses string similarity,
   not embeddings.
 - **Near-real-time, not push**: the SSE stream polls SQLite every ~0.5s.

@@ -129,6 +129,13 @@ def list_runs(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     return conn.execute("SELECT * FROM runs ORDER BY started_at DESC").fetchall()
 
 
+def set_run_name(conn: sqlite3.Connection, run_id: str, name: str, started_at: str | None = None) -> None:
+    if started_at is not None:
+        conn.execute("UPDATE runs SET name = ?, started_at = ? WHERE id = ?", (name, started_at, run_id))
+    else:
+        conn.execute("UPDATE runs SET name = ? WHERE id = ?", (name, run_id))
+
+
 def set_run_status(conn: sqlite3.Connection, run_id: str, status: str, ended_at: str | None) -> None:
     conn.execute(
         "UPDATE runs SET status = ?, ended_at = ? WHERE id = ?",
