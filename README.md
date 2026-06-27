@@ -92,7 +92,7 @@ This repo is being built phase by phase (see `PRD.md` section 24).
 - [x] **Phase 0** — repo scaffold, packaging, config
 - [x] **Phase 1** — FastAPI backend + SQLite + API routes + metrics
 - [x] **Phase 2** — Python SDK (`trace` / `event` / `@observe`, background sender, JSONL fallback)
-- [ ] **Phase 3** — CLI (`init / server / ui / dev / watch / import / export / demo`)
+- [x] **Phase 3** — CLI (`init / server / ui / dev / watch / import / export / demo`)
 - [ ] **Phase 4** — React UI
 - [ ] **Phase 5** — real-time streaming
 - [ ] **Phase 6** — loop detection rules
