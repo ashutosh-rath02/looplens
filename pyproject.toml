@@ -45,3 +45,9 @@ packages = ["looplens"]
 # no Node/npm required at install or runtime. Run `npm --prefix ui run build`
 # before `python -m build` / publishing.
 artifacts = ["looplens/server/_ui/**/*"]
+
+[tool.hatch.build.targets.sdist]
+# `python -m build` builds the sdist first, then builds the wheel FROM that
+# sdist — so the UI bundle must be force-included here too, or the wheel built
+# from the sdist ships without it. (The dir is git-ignored, hence `artifacts`.)
+artifacts = ["looplens/server/_ui/**/*"]
