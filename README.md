@@ -85,6 +85,19 @@ Your agent app ──(looplens SDK)──▶ Local FastAPI server ──▶ SQLi
   metrics, real-time stream.
 - **UI**: React + Vite + TypeScript + Tailwind.
 
+## Examples
+
+Three runnable agents under `examples/` exercise the detectors. Start the
+dashboard (`looplens dev`), then run any of them:
+
+```bash
+python examples/simple_agent.py        # a healthy run — no warnings
+python examples/looping_agent.py       # repeated tool call + no-progress loop
+python examples/retry_storm_agent.py   # retry storm
+```
+
+`looplens demo` runs the looping agent without needing the file checked out.
+
 ## Build status
 
 This repo is being built phase by phase (see `PRD.md` section 24).
@@ -96,7 +109,7 @@ This repo is being built phase by phase (see `PRD.md` section 24).
 - [x] **Phase 6** — loop detection rules (repeated tool, similar input, no-progress, retry storm, long step, cost spike)
 - [x] **Phase 4** — React UI (runs list, run detail, live timeline, metrics bar, warnings, event drawer)
 - [x] **Phase 5** — real-time streaming (SSE: live events + metrics + warnings)
-- [ ] **Phase 7** — polish, examples, demo
+- [x] **Phase 7** — polish, examples, demo
 
 ## Running from source
 
@@ -112,6 +125,40 @@ Open `http://localhost:8765` for the dashboard. The backend serves the built UI,
 so it's a single URL. For UI development with hot reload, run `npm --prefix ui run
 dev` (Vite on :5173, proxies `/api` to the backend). Interactive API docs are at
 `http://localhost:8765/docs`.
+
+## How loop detection works
+
+Detection is **rule-based and transparent** (PRD §17) — no black-box scoring. On
+every event the backend re-scans the run and raises (or updates) warnings:
+
+| Warning | Fires when |
+| --- | --- |
+| `repeated_tool_call` | same tool ≥3× within the last 8 events |
+| `repeated_tool_call_similar_input` | same tool ≥3× with ≥85% similar input |
+| `no_progress` | a tool repeats with no `state_updated` / `memory_write` between calls |
+| `retry_storm` | `retry_triggered` ≥3× in the run |
+| `long_running_step` | a step over 30s |
+| `cost_spike` | one event > 50% of run cost so far (above a $0.05 floor) |
+
+Each warning carries a health penalty; the run's score (0–100) maps to
+**Healthy / Warning / Likely stuck / Failed**.
+
+## Limitations (MVP)
+
+- **Manual instrumentation only.** Framework adapters (LangGraph, OpenAI Agents
+  SDK, CrewAI) are on the V1 roadmap; today you call `trace()`/`event()`/`@observe`.
+- **Rule-based detection**, not semantic — similar-input uses string similarity,
+  not embeddings.
+- **Near-real-time, not push**: the SSE stream polls SQLite every ~0.5s.
+- **Build the UI from source** — it isn't bundled into the pip package yet.
+- **Single local user, no auth** — local-first by design, not a production service.
+
+## Tests
+
+```bash
+pip install -e ".[dev]"
+pytest -q          # SDK resilience, all six detectors, and the SSE stream
+```
 
 ## License
 
