@@ -40,14 +40,24 @@ These are the smallest steps that most increase adoption.
 ## V1 — framework adapters (kill manual instrumentation)
 
 The biggest friction today is hand-placing `event()` calls. V1 makes LoopLens
-auto-capture from the frameworks people already use, in this order (PRD §21):
+auto-capture from the frameworks people already use (PRD §21).
 
-1. **LangGraph** — wrap the graph/state loop; map nodes → events natively.
-2. **OpenAI Agents SDK** — consume its tracing hooks (tool calls, handoffs,
+**Shipped:** **LangGraph / LangChain** — `LoopLensCallbackHandler` (in
+`looplens.integrations.langgraph`) is a LangChain callback handler, so it
+captures every node's LLM and tool calls (plus the run boundary, tokens, and
+latencies) with no manual `event()` calls. Install with
+`pip install "looplens[langgraph]"`.
+
+Next, in order:
+
+1. **OpenAI Agents SDK** — consume its tracing hooks (tool calls, handoffs,
    guardrails) directly.
-3. **CrewAI** — capture crew handoffs and task timelines (where repetition hides).
-4. **AutoGen** and **Pydantic AI** adapters.
-5. **Generic OpenTelemetry / OpenInference import** — avoid vendor lock-in.
+2. **CrewAI** — capture crew handoffs and task timelines (where repetition hides).
+3. **AutoGen** and **Pydantic AI** adapters.
+4. **Generic OpenTelemetry / OpenInference import** — avoid vendor lock-in.
+5. **Map LangGraph node transitions → handoff events** so `handoff_bounce` fires
+   on graph oscillation (the current adapter captures LLM/tool calls, not yet
+   node-to-node handoffs).
 
 Also in V1:
 

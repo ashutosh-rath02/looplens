@@ -25,10 +25,17 @@ server = [
     "typer>=0.9",
     "watchdog>=3.0",
 ]
+# Framework adapters (PRD section 21). Each imports its framework lazily, so the
+# base SDK stays zero-dep; install the extra only if you use that framework.
+langgraph = [
+    "langgraph>=0.2",
+]
 dev = [
     "looplens[server]",
     "pytest>=7.0",
     "httpx>=0.27",
+    # The adapter only imports langchain-core; CI installs it to test the mapping.
+    "langchain-core>=0.2",
 ]
 
 [project.scripts]
