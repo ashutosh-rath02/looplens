@@ -29,3 +29,6 @@ looplens/server/_ui/
 .idea/
 .DS_Store
 Thumbs.db
+
+# MkDocs build output
+site/

@@ -1,0 +1,74 @@
+site_name: LoopLens
+site_description: Chrome DevTools for AI agent loops — a local-first, real-time loop debugger.
+site_url: https://ashutosh-rath02.github.io/looplens/
+repo_url: https://github.com/ashutosh-rath02/looplens
+repo_name: ashutosh-rath02/looplens
+edit_uri: edit/main/docs/
+copyright: MIT licensed
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+    - search.highlight
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: installation.md
+      - Quickstart: quickstart.md
+  - Framework integration:
+      - Overview: frameworks.md
+      - OpenTelemetry (universal): opentelemetry.md
+      - LangGraph adapter: langgraph.md
+      - Manual SDK: sdk.md
+  - How it works:
+      - Architecture: architecture.md
+      - Loop detectors: detectors.md
+  - Reference:
+      - CLI: cli.md
+      - Examples: examples.md
+  - Roadmap: roadmap.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
