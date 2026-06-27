@@ -195,6 +195,13 @@ def insert_warning(conn: sqlite3.Connection, row: dict) -> None:
     )
 
 
+def update_warning(conn: sqlite3.Connection, warning_id: str, message: str, details_json: str) -> None:
+    conn.execute(
+        "UPDATE warnings SET message = ?, details_json = ? WHERE id = ?",
+        (message, details_json, warning_id),
+    )
+
+
 def list_warnings(conn: sqlite3.Connection, run_id: str) -> list[sqlite3.Row]:
     return conn.execute(
         "SELECT * FROM warnings WHERE run_id = ? ORDER BY created_at ASC", (run_id,)

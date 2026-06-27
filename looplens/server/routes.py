@@ -131,9 +131,8 @@ def ingest_event(body: EventIn) -> EventOut:
             if body.type in _TERMINAL_STATUS:
                 db.set_run_status(conn, body.run_id, _TERMINAL_STATUS[body.type], timestamp)
 
-            # Loop detection (Phase 6: no-op stub today).
-            for warning in run_detectors(conn, body.run_id):
-                db.insert_warning(conn, warning)
+            # Loop detection (raises/updates warnings in place).
+            run_detectors(conn, body.run_id)
 
         stored = conn.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
 
