@@ -19,6 +19,11 @@ These are the smallest steps that most increase adoption.
   card firing, the health score dropping.
 - **`looplens doctor`** — one command that checks the port, the SDK→server
   round-trip, and the JSONL fallback path, so onboarding never silently fails.
+- **Fix the SSE stream test on Windows.** `tests/test_stream.py` hangs under
+  Starlette's `TestClient` while consuming the infinite SSE generator on Windows
+  (the other 11 tests pass; the live server itself streams fine in a browser).
+  Needs a bounded/cancellable test client or `anyio` teardown fix — required
+  before the CI item above can gate on a green `pytest`.
 
 ## V1 — framework adapters (kill manual instrumentation)
 
