@@ -19,11 +19,15 @@ def _as_bool(value: str | None, default: bool) -> bool:
 @dataclass(frozen=True)
 class Config:
     # SDK: where to send events, and capture toggles.
-    endpoint: str = "http://localhost:8765"
+    endpoint: str = "http://127.0.0.1:8765"
     enabled: bool = True
     project: str = "default"
     capture_inputs: bool = True
     capture_outputs: bool = True
+    # SDK: HTTP send timeout (seconds), JSONL fallback dir, and debug logging.
+    timeout: float = 2.0
+    trace_dir: str = "looplens-traces"
+    debug: bool = False
 
     # Server: where to listen and where SQLite lives.
     host: str = "127.0.0.1"
@@ -33,11 +37,14 @@ class Config:
     @classmethod
     def from_env(cls) -> "Config":
         return cls(
-            endpoint=os.environ.get("LOOPLENS_ENDPOINT", "http://localhost:8765"),
+            endpoint=os.environ.get("LOOPLENS_ENDPOINT", "http://127.0.0.1:8765"),
             enabled=_as_bool(os.environ.get("LOOPLENS_ENABLED"), True),
             project=os.environ.get("LOOPLENS_PROJECT", "default"),
             capture_inputs=_as_bool(os.environ.get("LOOPLENS_CAPTURE_INPUTS"), True),
             capture_outputs=_as_bool(os.environ.get("LOOPLENS_CAPTURE_OUTPUTS"), True),
+            timeout=float(os.environ.get("LOOPLENS_TIMEOUT", "2.0")),
+            trace_dir=os.environ.get("LOOPLENS_TRACE_DIR", "looplens-traces"),
+            debug=_as_bool(os.environ.get("LOOPLENS_DEBUG"), False),
             host=os.environ.get("LOOPLENS_HOST", "127.0.0.1"),
             port=int(os.environ.get("LOOPLENS_PORT", "8765")),
             db_path=os.environ.get("LOOPLENS_DB_PATH", "looplens.db"),

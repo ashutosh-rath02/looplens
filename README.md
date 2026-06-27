@@ -28,10 +28,33 @@ with trace("research-agent"):
     event("tool_call_completed", tool="web_search", output={"results": 5})
 ```
 
+Or wrap a function with `@observe` to capture inputs, outputs, latency, and
+errors automatically:
+
+```python
+from looplens import observe
+
+@observe(kind="tool")
+def web_search(query):
+    ...
+```
+
 The base install is **pure-stdlib with zero third-party dependencies**, so it
-won't conflict with anything in your agent's environment. If the dashboard is
-running, events stream to it live; if not, the SDK falls back to a local JSONL
-file and **never crashes your app**.
+won't conflict with anything in your agent's environment. Events are sent from a
+background thread (your loop never blocks). If the dashboard is running, events
+stream to it live; if not, the SDK buffers to a local JSONL file and **never
+crashes your app**.
+
+Configure via environment variables:
+
+```bash
+LOOPLENS_ENDPOINT=http://127.0.0.1:8765   # where the dashboard listens
+LOOPLENS_ENABLED=true                      # set false to make the SDK a no-op
+LOOPLENS_PROJECT=default
+LOOPLENS_CAPTURE_INPUTS=true
+LOOPLENS_CAPTURE_OUTPUTS=true
+LOOPLENS_TRACE_DIR=looplens-traces         # JSONL fallback location
+```
 
 ## Install
 
@@ -68,7 +91,7 @@ This repo is being built phase by phase (see `PRD.md` section 24).
 
 - [x] **Phase 0** — repo scaffold, packaging, config
 - [x] **Phase 1** — FastAPI backend + SQLite + API routes + metrics
-- [ ] **Phase 2** — Python SDK (`trace` / `event`, JSONL fallback)
+- [x] **Phase 2** — Python SDK (`trace` / `event` / `@observe`, background sender, JSONL fallback)
 - [ ] **Phase 3** — CLI (`init / server / ui / dev / watch / import / export / demo`)
 - [ ] **Phase 4** — React UI
 - [ ] **Phase 5** — real-time streaming

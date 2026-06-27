@@ -12,6 +12,6 @@ from __future__ import annotations
 
 __version__ = "0.1.0"
 
-from .sdk import event, trace
+from .sdk import event, flush, observe, trace
 
-__all__ = ["trace", "event", "__version__"]
+__all__ = ["trace", "event", "observe", "flush", "__version__"]
