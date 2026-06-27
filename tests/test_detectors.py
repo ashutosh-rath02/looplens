@@ -42,6 +42,37 @@ def test_repeated_similar_and_no_progress(client):
     assert sum(1 for w in warnings if w["type"] == "repeated_tool_call") == 1
 
 
+def test_repeated_tool_detected_in_interleaved_react_trace(client):
+    # A ReAct step interleaves llm_call_* and tool_call_* events. The window must
+    # slide over tool calls, not raw events, or these searches never trip the rule.
+    # Queries are deliberately dissimilar so similar_input does NOT mask the result.
+    client.post("/api/runs", json={"id": "rt", "name": "react"})
+    queries = ["how to deploy", "retry backoff config", "auth token rotation", "stream the logs"]
+    for q in queries:
+        ev(client, "rt", "llm_call_started", model="m")
+        ev(client, "rt", "llm_call_completed", model="m")
+        ev(client, "rt", "tool_call_started", tool="search", input={"q": q})
+        ev(client, "rt", "tool_call_completed", tool="search")
+
+    types = warning_types(client, "rt")
+    assert "repeated_tool_call" in types  # caught despite interleaved llm events
+    assert "repeated_tool_call_similar_input" not in types  # inputs differ -> not similar
+
+
+def test_handoff_bounce(client):
+    client.post("/api/runs", json={"id": "hb", "name": "bounce"})
+    for a in ["researcher", "planner", "researcher", "planner"]:
+        ev(client, "hb", "handoff_started", agent=a)
+    assert "handoff_bounce" in warning_types(client, "hb")
+
+
+def test_no_handoff_bounce_for_linear_flow(client):
+    client.post("/api/runs", json={"id": "hl", "name": "linear"})
+    for a in ["planner", "researcher", "writer"]:  # 3 distinct agents, no ping-pong
+        ev(client, "hl", "handoff_started", agent=a)
+    assert "handoff_bounce" not in warning_types(client, "hl")
+
+
 def test_no_progress_clears_when_state_updates(client):
     client.post("/api/runs", json={"id": "rp", "name": "progress"})
     for _ in range(4):

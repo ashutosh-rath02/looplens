@@ -6,12 +6,13 @@ the run's events, compares against warnings already raised, and returns only the
 matters, and what to try (PRD section 23.2).
 
 Rules:
-  1. repeated_tool_call               — same tool >= 3x within the last 8 events
+  1. repeated_tool_call               — same tool >= 3x within the last 8 tool calls
   2. repeated_tool_call_similar_input — same tool >= 3x with near-identical input
   3. no_progress                      — tool repeats with no state/memory update
   4. retry_storm                      — retry_triggered >= 3x in the run
   5. long_running_step                — a step over the latency threshold
   6. cost_spike                       — one event dominating run cost
+  7. handoff_bounce                   — two agents handing off back and forth
 """
 
 from __future__ import annotations
@@ -47,13 +48,17 @@ def _norm(input_json: str | None) -> str:
 # --- individual rules ------------------------------------------------------
 
 def _repeated_tool(events):
-    window = [e for e in events[-REPEAT_WINDOW:] if e["type"] == "tool_call_started"]
+    # Window over the last REPEAT_WINDOW *tool calls*, not raw events. A ReAct
+    # step interleaves llm_call_* and tool_call_* events, so a raw-event window
+    # only ever holds one or two tool calls and never trips the threshold. The
+    # signal we want is "the same tool keeps getting called", so slide over the
+    # tool-call sequence itself.
+    tool_starts = [e for e in events if e["type"] == "tool_call_started" and _tool(e)]
+    window = tool_starts[-REPEAT_WINDOW:]
     counts: dict[str, int] = defaultdict(int)
     last: dict[str, str] = {}
     for e in window:
         t = _tool(e)
-        if not t:
-            continue
         counts[t] += 1
         last[t] = e["id"]
     out = []
@@ -61,8 +66,8 @@ def _repeated_tool(events):
         if c >= REPEAT_THRESHOLD:
             out.append({
                 "type": "repeated_tool_call", "severity": "warning",
-                "message": (f"'{t}' was called {c} times within the last {REPEAT_WINDOW} "
-                            f"events. Check the loop's exit condition or add a step limit."),
+                "message": (f"'{t}' was called {c} times within a window of {REPEAT_WINDOW} "
+                            f"tool calls. Check the loop's exit condition or add a step limit."),
                 "details": {"tool": t, "count": c, "window": REPEAT_WINDOW},
                 "event_id": last[t],
             })
@@ -163,14 +168,41 @@ def _cost_spike(events):
     return out
 
 
-_RULES = (_repeated_tool, _similar_input, _no_progress, _retry_storm, _long_step, _cost_spike)
+def _handoff_bounce(events):
+    # Multi-agent oscillation: control ping-pongs between the same two agents
+    # (planner -> researcher -> planner -> researcher). The `agent` on each
+    # handoff_started is the agent receiving control; an alternation between
+    # exactly two agents is the bounce, regardless of source/target convention.
+    agents = [e["agent"] for e in events
+              if e["type"] == "handoff_started" and e["agent"]]
+    last = [e["id"] for e in events if e["type"] == "handoff_started" and e["agent"]]
+    if len(agents) < REPEAT_THRESHOLD:
+        return []
+    tail = agents[-6:]
+    pair = set(tail)
+    alternating = len(pair) == 2 and all(tail[i] != tail[i + 1] for i in range(len(tail) - 1))
+    if not (alternating and len(tail) >= REPEAT_THRESHOLD):
+        return []
+    a, b = sorted(pair)
+    return [{
+        "type": "handoff_bounce", "severity": "warning",
+        "message": (f"Agents '{a}' and '{b}' handed off back and forth {len(tail)} times "
+                    f"without resolving. A handoff loop usually means neither agent can "
+                    f"finish — clarify ownership, pass more context, or cap handoffs."),
+        "details": {"agents": [a, b], "pair": f"{a}|{b}", "count": len(tail)},
+        "event_id": last[-1],
+    }]
+
+
+_RULES = (_repeated_tool, _similar_input, _no_progress, _retry_storm, _long_step,
+          _cost_spike, _handoff_bounce)
 
 
 # --- engine ----------------------------------------------------------------
 
 def _key(wtype: str, details: dict) -> str:
     """Stable identity so a warning is raised once, not on every later event."""
-    discriminator = details.get("tool") or details.get("event_id") or ""
+    discriminator = details.get("tool") or details.get("pair") or details.get("event_id") or ""
     return f"{wtype}|{discriminator}"
 
 

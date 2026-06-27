@@ -1,9 +1,17 @@
 # LoopLens Roadmap
 
 The MVP is feature-complete (PRD §26): zero-dep SDK, FastAPI + SQLite backend,
-CLI, React dashboard, live SSE streaming, six rule-based loop detectors, and a
+CLI, React dashboard, live SSE streaming, seven rule-based loop detectors, and a
 demo that reliably trips a warning. This roadmap is what comes next, ordered by
 value-to-effort.
+
+**Recently shipped** (validated against real GitHub loop patterns —
+[langgraph#6731](https://github.com/langchain-ai/langgraph/issues/6731),
+[langchain#36139](https://github.com/langchain-ai/langchain/issues/36139)):
+the `repeated_tool_call` window now slides over *tool calls* instead of raw
+events (so interleaved ReAct traces trip it — confirmed on a live OpenAI run),
+and the **handoff-bounce** detector (PRD §17 Rule 7) catches A→B→A→B agent
+oscillation.
 
 ## Now → next (the immediate backlog)
 
@@ -38,7 +46,12 @@ Also in V1:
 - **Run comparison** — diff two runs (before/after a prompt or retry-rule change).
 - **Simple graph view** — agent/tool transition graph, *after* the timeline.
 - **Cost-budget alerts** — warn when a run crosses a configured $ ceiling.
-- **Handoff-bounce detector** (PRD §17 Rule 7) — A→B→A→B ping-pong.
+- **Exact tool+args repeat detector** — hash `(tool, normalized args)` and flag
+  byte-identical repeats as a high-confidence signal (the canonical LangGraph /
+  deer-flow bug). Complements the fuzzy `similar_input` rule.
+- **Empty/ambiguous-result loop** — flag a tool that returns empty / "no results"
+  repeatedly (a documented root cause of reasoning loops); needs output
+  inspection, so it ships after the exact-repeat rule.
 
 ## V2 — smarter diagnosis
 

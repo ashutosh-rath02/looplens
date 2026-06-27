@@ -116,16 +116,26 @@ Your agent app ──(looplens SDK)──▶ Local FastAPI server ──▶ SQLi
 
 ## Examples
 
-Three runnable agents under `examples/` exercise the detectors. Start the
-dashboard (`looplens dev`), then run any of them:
+Runnable agents under `examples/` exercise the detectors. Start the dashboard
+(`looplens dev`), then run any of them:
 
 ```bash
-python examples/simple_agent.py        # a healthy run — no warnings
-python examples/looping_agent.py       # repeated tool call + no-progress loop
-python examples/retry_storm_agent.py   # retry storm
+python examples/simple_agent.py         # a healthy run — no warnings
+python examples/looping_agent.py        # repeated tool call + no-progress loop
+python examples/retry_storm_agent.py    # retry storm
+python examples/handoff_bounce_agent.py # two agents ping-ponging handoffs
 ```
 
 `looplens demo` runs the looping agent without needing the file checked out.
+
+`examples/real_research_agent_openai.py` is a **real** agent — it makes live
+OpenAI calls (function calling) against a tiny corpus that lacks the answer, so
+the model genuinely loops. Needs `pip install openai` and `OPENAI_API_KEY`
+(optionally `OPENAI_MODEL`):
+
+```bash
+OPENAI_API_KEY=sk-... PYTHONPATH=. python examples/real_research_agent_openai.py
+```
 
 ## Build status
 
@@ -170,12 +180,13 @@ every event the backend re-scans the run and raises (or updates) warnings:
 
 | Warning | Fires when |
 | --- | --- |
-| `repeated_tool_call` | same tool ≥3× within the last 8 events |
+| `repeated_tool_call` | same tool ≥3× within the last 8 **tool calls** (window slides over tool calls, not raw events, so interleaved ReAct traces still trip it) |
 | `repeated_tool_call_similar_input` | same tool ≥3× with ≥85% similar input |
 | `no_progress` | a tool repeats with no `state_updated` / `memory_write` between calls |
 | `retry_storm` | `retry_triggered` ≥3× in the run |
 | `long_running_step` | a step over 30s |
 | `cost_spike` | one event > 50% of run cost so far (above a $0.05 floor) |
+| `handoff_bounce` | control ping-pongs between the same two agents (A→B→A→B) |
 
 Each warning carries a health penalty; the run's score (0–100) maps to
 **Healthy / Warning / Likely stuck / Failed**.
@@ -193,7 +204,7 @@ Each warning carries a health penalty; the run's score (0–100) maps to
 
 ```bash
 pip install -e ".[dev]"
-pytest -q          # SDK resilience, all six detectors, and the SSE stream
+pytest -q          # SDK resilience, all seven detectors, and the SSE stream
 ```
 
 ## Roadmap

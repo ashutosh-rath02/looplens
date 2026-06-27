@@ -21,6 +21,7 @@ WARNING_PENALTIES: dict[str, int] = {
     "no_progress": 30,
     "long_running_step": 10,
     "cost_spike": 15,
+    "handoff_bounce": 20,
 }
 FAILED_RUN_PENALTY = 30
 
