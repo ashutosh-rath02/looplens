@@ -14,6 +14,9 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "dist",
+    // Build straight into the Python package so the wheel ships the dashboard
+    // and `pip install "looplens[server]"` needs no Node/npm at runtime.
+    outDir: "../looplens/server/_ui",
+    emptyOutDir: true,
   },
 });

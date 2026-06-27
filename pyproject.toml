@@ -40,3 +40,8 @@ Repository = "https://github.com/ashutosh-rath02/looplens"
 
 [tool.hatch.build.targets.wheel]
 packages = ["looplens"]
+# The built React dashboard lands in looplens/server/_ui (git-ignored). Force it
+# into the wheel so `pip install "looplens[server]"` ships a ready-to-run UI with
+# no Node/npm required at install or runtime. Run `npm --prefix ui run build`
+# before `python -m build` / publishing.
+artifacts = ["looplens/server/_ui/**/*"]

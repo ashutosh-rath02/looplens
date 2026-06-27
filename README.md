@@ -60,16 +60,36 @@ LOOPLENS_TRACE_DIR=looplens-traces         # JSONL fallback location
 
 ```bash
 pip install looplens             # the SDK (drop into your agent — zero deps)
-pip install "looplens[server]"   # adds the dashboard (FastAPI + UI)
+pip install "looplens[server]"   # adds the dashboard (FastAPI + prebuilt UI)
 ```
+
+That's it — **no Node, no npm, no build step.** The `[server]` extra ships the
+compiled React dashboard inside the wheel, so `looplens dev` serves a ready UI on
+the first run. (`pipx install "looplens[server]"`, `uv pip install`, and
+`uv tool install` work the same way.)
+
+### Works with any agent or framework
+
+The base `looplens` SDK is **pure Python stdlib with zero third-party
+dependencies**, so it installs cleanly next to any agent stack and pins nothing:
+
+- **LangGraph / LangChain**, **CrewAI**, **AutoGen**, **OpenAI Agents SDK**,
+  **Pydantic AI**, or a hand-rolled `while` loop — if it's Python, you can
+  instrument it with `trace()` / `event()` / `@observe`.
+- No API key, no login, no network egress — events go to `127.0.0.1` only, and
+  the SDK is a no-op when `LOOPLENS_ENABLED=false`.
+- Fail-silent by design: if the dashboard isn't running it buffers to JSONL and
+  **never raises into your agent**.
 
 ## Quickstart
 
 ```bash
 pip install "looplens[server]"
-looplens dev      # start backend + UI on http://localhost:8765
+looplens dev      # start backend + prebuilt UI on http://localhost:8765
 looplens demo     # run a sample looping agent that trips a warning
 ```
+
+Open <http://localhost:8765> and watch the run appear live.
 
 ## Architecture
 
@@ -113,18 +133,26 @@ This repo is being built phase by phase (see `PRD.md` section 24).
 
 ## Running from source
 
+The published wheel ships the prebuilt dashboard, so end users never touch Node.
+Building **from a git checkout** is the only time you need npm — once, to compile
+the UI into the Python package:
+
 ```bash
 pip install -e ".[server]"            # backend + CLI
 npm --prefix ui install               # one-time UI deps
-npm --prefix ui run build             # build the React bundle into ui/dist
+npm --prefix ui run build             # compiles the React bundle into looplens/server/_ui/
 python -m looplens.server             # or: looplens server  (serves API + UI)
 looplens demo                         # seed a looping run that trips warnings
 ```
 
-Open `http://localhost:8765` for the dashboard. The backend serves the built UI,
+Open `http://localhost:8765` for the dashboard. The backend serves the bundled UI,
 so it's a single URL. For UI development with hot reload, run `npm --prefix ui run
 dev` (Vite on :5173, proxies `/api` to the backend). Interactive API docs are at
 `http://localhost:8765/docs`.
+
+Packaging a release: run `npm --prefix ui run build` first, then `python -m build`
+— the wheel force-includes `looplens/server/_ui/` so it's installable with zero
+Node.
 
 ## How loop detection works
 
@@ -150,7 +178,6 @@ Each warning carries a health penalty; the run's score (0–100) maps to
 - **Rule-based detection**, not semantic — similar-input uses string similarity,
   not embeddings.
 - **Near-real-time, not push**: the SSE stream polls SQLite every ~0.5s.
-- **Build the UI from source** — it isn't bundled into the pip package yet.
 - **Single local user, no auth** — local-first by design, not a production service.
 
 ## Tests
@@ -159,6 +186,12 @@ Each warning carries a health penalty; the run's score (0–100) maps to
 pip install -e ".[dev]"
 pytest -q          # SDK resilience, all six detectors, and the SSE stream
 ```
+
+## Roadmap
+
+See [`ROADMAP.md`](ROADMAP.md) for what's next — PyPI release, CI, and framework
+adapters (LangGraph, OpenAI Agents SDK, CrewAI) to remove manual instrumentation.
+Launch copy lives in [`LAUNCH.md`](LAUNCH.md).
 
 ## License
 

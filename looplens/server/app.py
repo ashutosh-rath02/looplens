@@ -43,7 +43,8 @@ def _ui_dist() -> Path | None:
     override = os.environ.get("LOOPLENS_UI_DIST")
     candidates = [Path(override)] if override else []
     candidates += [
-        Path(__file__).resolve().parents[2] / "ui" / "dist",  # repo checkout
+        Path(__file__).resolve().parent / "_ui",  # bundled in the installed wheel
+        Path(__file__).resolve().parents[2] / "ui" / "dist",  # repo checkout (legacy)
         Path.cwd() / "ui" / "dist",
     ]
     for c in candidates:
@@ -79,7 +80,7 @@ else:
             "version": __version__,
             "docs": "/docs",
             "health": "/api/health",
-            "ui": "not built — run `npm --prefix ui install && npm --prefix ui run build`",
+            "ui": "not bundled — install the published wheel, or build from source: `npm --prefix ui install && npm --prefix ui run build`",
         }
 
 
