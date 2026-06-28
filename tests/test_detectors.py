@@ -150,6 +150,28 @@ def test_cost_spike(client):
     assert "cost_spike" in warning_types(client, "r4")
 
 
+def test_cost_budget_exceeded(client, monkeypatch):
+    monkeypatch.setenv("LOOPLENS_COST_BUDGET", "0.05")
+    client.post("/api/runs", json={"id": "cb", "name": "budget"})
+    ev(client, "cb", "llm_call_completed", cost=0.03)
+    ev(client, "cb", "llm_call_completed", cost=0.04)  # total 0.07 > 0.05
+    assert "cost_budget_exceeded" in warning_types(client, "cb")
+
+
+def test_no_cost_budget_when_under_ceiling(client, monkeypatch):
+    monkeypatch.setenv("LOOPLENS_COST_BUDGET", "1.00")
+    client.post("/api/runs", json={"id": "cu", "name": "under"})
+    ev(client, "cu", "llm_call_completed", cost=0.03)
+    assert "cost_budget_exceeded" not in warning_types(client, "cu")
+
+
+def test_no_cost_budget_when_unset(client):
+    # No LOOPLENS_COST_BUDGET -> the rule is a no-op even with real spend.
+    client.post("/api/runs", json={"id": "cn", "name": "nobudget"})
+    ev(client, "cn", "llm_call_completed", cost=5.0)
+    assert "cost_budget_exceeded" not in warning_types(client, "cn")
+
+
 def test_healthy_run_has_no_warnings(client):
     client.post("/api/runs", json={"id": "r5", "name": "ok"})
     ev(client, "r5", "run_started")

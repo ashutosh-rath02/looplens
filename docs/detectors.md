@@ -4,7 +4,7 @@ Detection is **rule-based and transparent** — no black-box scoring. On every
 event the backend re-scans the run and raises (or updates) warnings. Each warning
 says what happened, why it matters, and what to try.
 
-## The nine rules
+## The ten rules
 
 | Warning | Fires when |
 | --- | --- |
@@ -16,6 +16,7 @@ says what happened, why it matters, and what to try.
 | `retry_storm` | `retry_triggered` ≥3× in the run |
 | `long_running_step` | a step over 30s |
 | `cost_spike` | one event > 50% of run cost so far (above a $0.05 floor) |
+| `cost_budget_exceeded` | run total cost crosses `LOOPLENS_COST_BUDGET` — **opt-in**, only active when that env var is set |
 | `handoff_bounce` | control ping-pongs between the same two agents (A→B→A→B) |
 
 The same loop can trip several rules at once — that's intended. Byte-identical
@@ -37,6 +38,7 @@ and the score maps to a status:
 | `handoff_bounce` | −20 |
 | `repeated_tool_call` | −15 |
 | `cost_spike` | −15 |
+| `cost_budget_exceeded` | −15 |
 | `long_running_step` | −10 |
 | (run ended in failure) | −30 |
 

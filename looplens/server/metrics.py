@@ -23,6 +23,7 @@ WARNING_PENALTIES: dict[str, int] = {
     "empty_result_loop": 20,
     "long_running_step": 10,
     "cost_spike": 15,
+    "cost_budget_exceeded": 15,
     "handoff_bounce": 20,
 }
 FAILED_RUN_PENALTY = 30

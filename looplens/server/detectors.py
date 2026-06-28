@@ -14,7 +14,8 @@ Rules:
   6. retry_storm                      — retry_triggered >= 3x in the run
   7. long_running_step                — a step over the latency threshold
   8. cost_spike                       — one event dominating run cost
-  9. handoff_bounce                   — two agents handing off back and forth
+  9. cost_budget_exceeded             — run total cost over LOOPLENS_COST_BUDGET (opt-in)
+ 10. handoff_bounce                   — two agents handing off back and forth
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ import json
 import sqlite3
 from collections import defaultdict
 
+from ..config import get_config
 from . import db
 
 REPEAT_WINDOW = 8
@@ -254,6 +256,25 @@ def _cost_spike(events):
     return out
 
 
+def _cost_budget(events):
+    # Opt-in: only active when LOOPLENS_COST_BUDGET is set. Flags a run whose
+    # total spend crosses the ceiling — a runaway loop burning tokens.
+    budget = get_config().cost_budget
+    if not budget or not events:
+        return []
+    total = sum(e["cost"] or 0 for e in events)
+    if total <= budget:
+        return []
+    return [{
+        "type": "cost_budget_exceeded", "severity": "warning",
+        "message": (f"This run has cost ${total:.4f}, over the ${budget:.2f} budget "
+                    f"(LOOPLENS_COST_BUDGET). A loop may be burning spend — check the "
+                    f"timeline for repeated LLM calls."),
+        "details": {"total": round(total, 6), "budget": budget},
+        "event_id": events[-1]["id"],
+    }]
+
+
 def _handoff_bounce(events):
     # Multi-agent oscillation: control ping-pongs between the same two agents
     # (planner -> researcher -> planner -> researcher). The `agent` on each
@@ -281,7 +302,7 @@ def _handoff_bounce(events):
 
 
 _RULES = (_repeated_tool, _similar_input, _exact_repeat, _no_progress, _empty_result,
-          _retry_storm, _long_step, _cost_spike, _handoff_bounce)
+          _retry_storm, _long_step, _cost_spike, _cost_budget, _handoff_bounce)
 
 
 # --- engine ----------------------------------------------------------------

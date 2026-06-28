@@ -38,4 +38,5 @@ All commands read the same environment variables as the
 LOOPLENS_HOST=127.0.0.1
 LOOPLENS_PORT=8765
 LOOPLENS_DB_PATH=looplens.db
+LOOPLENS_COST_BUDGET=0.50   # optional: warn when a run's total cost crosses this (USD)
 ```

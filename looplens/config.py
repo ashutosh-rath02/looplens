@@ -33,9 +33,13 @@ class Config:
     host: str = "127.0.0.1"
     port: int = 8765
     db_path: str = "looplens.db"
+    # Server: optional per-run cost ceiling (USD). When set, a run whose total
+    # cost crosses it raises a cost_budget_exceeded warning. None = disabled.
+    cost_budget: float | None = None
 
     @classmethod
     def from_env(cls) -> "Config":
+        budget = os.environ.get("LOOPLENS_COST_BUDGET")
         return cls(
             endpoint=os.environ.get("LOOPLENS_ENDPOINT", "http://127.0.0.1:8765"),
             enabled=_as_bool(os.environ.get("LOOPLENS_ENABLED"), True),
@@ -48,6 +52,7 @@ class Config:
             host=os.environ.get("LOOPLENS_HOST", "127.0.0.1"),
             port=int(os.environ.get("LOOPLENS_PORT", "8765")),
             db_path=os.environ.get("LOOPLENS_DB_PATH", "looplens.db"),
+            cost_budget=float(budget) if budget else None,
         )
 
 

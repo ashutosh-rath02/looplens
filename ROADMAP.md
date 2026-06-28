@@ -1,7 +1,7 @@
 # LoopLens Roadmap
 
 The MVP is feature-complete (PRD §26): zero-dep SDK, FastAPI + SQLite backend,
-CLI, React dashboard, live SSE streaming, nine rule-based loop detectors, and a
+CLI, React dashboard, live SSE streaming, ten rule-based loop detectors, and a
 demo that reliably trips a warning. This roadmap is what comes next, ordered by
 value-to-effort.
 
@@ -74,11 +74,14 @@ Next, in order:
 4. **Arbitrary node-to-node handoffs** — map graph node transitions (beyond the
    transfer-tool convention) to handoff events without flagging healthy loops.
 
+**Shipped — cost-budget alerts.** Set `LOOPLENS_COST_BUDGET` (USD) and a run whose
+total cost crosses it raises a `cost_budget_exceeded` warning — catches a runaway
+loop burning spend. Opt-in, so it's a no-op until configured.
+
 Also in V1:
 
 - **Run comparison** — diff two runs (before/after a prompt or retry-rule change).
 - **Simple graph view** — agent/tool transition graph, *after* the timeline.
-- **Cost-budget alerts** — warn when a run crosses a configured $ ceiling.
 
 ## V2 — smarter diagnosis
 

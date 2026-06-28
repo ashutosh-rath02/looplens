@@ -250,6 +250,7 @@ every event the backend re-scans the run and raises (or updates) warnings:
 | `retry_storm` | `retry_triggered` ≥3× in the run |
 | `long_running_step` | a step over 30s |
 | `cost_spike` | one event > 50% of run cost so far (above a $0.05 floor) |
+| `cost_budget_exceeded` | run total cost crosses `LOOPLENS_COST_BUDGET` (opt-in) |
 | `handoff_bounce` | control ping-pongs between the same two agents (A→B→A→B) |
 
 Each warning carries a health penalty; the run's score (0–100) maps to
@@ -271,7 +272,7 @@ Each warning carries a health penalty; the run's score (0–100) maps to
 
 ```bash
 pip install -e ".[dev]"
-pytest -q          # SDK resilience, all nine detectors, and the SSE stream
+pytest -q          # SDK resilience, all ten detectors, and the SSE stream
 ```
 
 ## Roadmap
