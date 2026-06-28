@@ -4,10 +4,14 @@ import { severityClasses } from "../lib";
 const TITLES: Record<string, string> = {
   repeated_tool_call: "Repeated tool call",
   repeated_tool_call_similar_input: "Repeated tool call · similar input",
+  repeated_tool_call_exact_input: "Repeated tool call · exact input",
   no_progress: "No-progress loop",
+  empty_result_loop: "Empty-result loop",
   retry_storm: "Retry storm",
   long_running_step: "Long-running step",
   cost_spike: "Cost spike",
+  cost_budget_exceeded: "Cost budget exceeded",
+  handoff_bounce: "Handoff bounce",
 };
 
 export default function WarningCard({ w }: { w: WarningOut }) {
