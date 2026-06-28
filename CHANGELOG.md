@@ -3,6 +3,15 @@
 All notable changes to LoopLens are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+
+- **OpenAI Agents SDK adapter** (`looplens.integrations.openai_agents`) — a
+  native `TracingProcessor` that maps the SDK's generation, tool, **handoff**,
+  and **guardrail** spans to LoopLens events. `instrument()` is a one-liner.
+  Install with `pip install "looplens[openai-agents]"`.
+
 ## 0.3.0
 
 ### Added

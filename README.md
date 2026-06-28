@@ -200,6 +200,20 @@ It maps LangChain callbacks to LoopLens events (`on_chat_model_start` →
 `llm_call_started`, `on_tool_start` → `tool_call_started`, errors → `*_failed`,
 root chain start/end → run open/close). Needs `pip install "looplens[langgraph]"`.
 
+### 3. OpenAI Agents SDK adapter
+
+A native `TracingProcessor` that captures the SDK's handoffs and guardrails (not
+just LLM/tool calls). One line:
+
+```python
+from looplens.integrations.openai_agents import instrument
+
+instrument(name="my-agents-app")   # then use Runner.run(...) as usual
+```
+
+Needs `pip install "looplens[openai-agents]"`. See the
+[docs](https://ashutosh-rath02.github.io/looplens/openai-agents/).
+
 ## Build status
 
 This repo is being built phase by phase (see `PRD.md` section 24).

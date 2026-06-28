@@ -1,7 +1,7 @@
 # Framework integration
 
 LoopLens is **not a standalone app you rebuild your agent inside.** You add it to
-the agent you already have. There are three ways to do that, from
+the agent you already have. There are a few ways to do that, from
 zero-instrumentation to full manual control.
 
 ```mermaid
@@ -35,7 +35,14 @@ calls. One line in your run config.
 
 → [LangGraph adapter](langgraph.md)
 
-### 3. Manual SDK — full control
+### 3. OpenAI Agents SDK adapter — native handoffs & guardrails
+
+A native `TracingProcessor` that captures the SDK's typed spans, including
+handoffs and guardrail trips that the generic OTel path only approximates.
+
+→ [OpenAI Agents SDK adapter](openai-agents.md)
+
+### 4. Manual SDK — full control
 
 Call `trace()` / `event()` / `@observe` yourself. Best for hand-rolled loops or
 when you want to emit exactly the events you care about.
@@ -48,8 +55,9 @@ when you want to emit exactly the events you care about.
 | --- | --- |
 | Any framework with an OpenInference/OpenLLMetry instrumentor | **OpenTelemetry** |
 | A LangGraph or LangChain app | **LangGraph adapter** (or OpenTelemetry) |
+| An OpenAI Agents SDK app | **OpenAI Agents adapter** (native handoffs/guardrails) |
 | A hand-rolled loop, or a framework with no instrumentor | **Manual SDK** |
 
-All three funnel through the **same** ingestion pipeline, so the
+All of these funnel through the **same** ingestion pipeline, so the
 [loop detectors](detectors.md), health scoring, and live UI work identically no
 matter how the events arrived.

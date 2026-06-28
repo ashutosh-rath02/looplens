@@ -30,6 +30,9 @@ server = [
 langgraph = [
     "langgraph>=0.2",
 ]
+openai-agents = [
+    "openai-agents>=0.1",
+]
 # Universal OpenTelemetry ingestion: lets any framework with an OTLP exporter
 # stream to /v1/traces. Only needed to decode OTLP/protobuf; OTLP/JSON works
 # with no extra dependency.
@@ -44,6 +47,8 @@ dev = [
     "langchain-core>=0.2",
     # OTLP/protobuf decoding, so CI exercises the protobuf path too.
     "opentelemetry-proto>=1.0",
+    # OpenAI Agents SDK, so CI exercises the agents adapter mapping.
+    "openai-agents>=0.1",
 ]
 
 [project.scripts]

@@ -65,13 +65,17 @@ supervisor/swarm and CrewAI convention) and emit `handoff_started` events, so
 convention — not every node transition — keeps a normal ReAct `agent`↔`tools`
 loop from looking like a bounce.
 
+**Shipped — OpenAI Agents SDK adapter.** A native `TracingProcessor`
+(`looplens.integrations.openai_agents`) maps the SDK's typed spans —
+generations, tool calls, **handoffs**, and **guardrails** — to LoopLens events,
+so handoffs and guardrail trips are captured natively rather than inferred.
+`instrument()` is a one-liner. Install with `pip install "looplens[openai-agents]"`.
+
 Next, in order:
 
-1. **OpenAI Agents SDK** — consume its tracing hooks (tool calls, handoffs,
-   guardrails) directly, for richer signal than the generic OTel spans.
-2. **CrewAI** — capture crew handoffs and task timelines (where repetition hides).
-3. **AutoGen** and **Pydantic AI** adapters.
-4. **Arbitrary node-to-node handoffs** — map graph node transitions (beyond the
+1. **CrewAI** — capture crew handoffs and task timelines (where repetition hides).
+2. **AutoGen** and **Pydantic AI** adapters.
+3. **Arbitrary node-to-node handoffs** — map graph node transitions (beyond the
    transfer-tool convention) to handoff events without flagging healthy loops.
 
 **Shipped — cost-budget alerts.** Set `LOOPLENS_COST_BUDGET` (USD) and a run whose
