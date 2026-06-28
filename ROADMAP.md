@@ -1,7 +1,7 @@
 # LoopLens Roadmap
 
 The MVP is feature-complete (PRD §26): zero-dep SDK, FastAPI + SQLite backend,
-CLI, React dashboard, live SSE streaming, eight rule-based loop detectors, and a
+CLI, React dashboard, live SSE streaming, nine rule-based loop detectors, and a
 demo that reliably trips a warning. This roadmap is what comes next, ordered by
 value-to-effort.
 
@@ -21,10 +21,13 @@ on a `v*` tag via trusted publishing. Plus **`looplens doctor`** (checks the
 port, the SDK→server round-trip, and the JSONL fallback) and **auto-open** of
 the dashboard on `looplens dev` (with `--no-open`).
 
-And the **exact tool+args repeat** detector (`repeated_tool_call_exact_input`):
-flags byte-identical `(tool, normalized args)` repeats as the highest-confidence
-loop signal short of `no_progress` — the canonical LangGraph / deer-flow bug,
-complementing the fuzzy `similar_input` rule.
+And two more detectors: the **exact tool+args repeat**
+(`repeated_tool_call_exact_input`) flags byte-identical `(tool, normalized args)`
+repeats as the highest-confidence loop signal short of `no_progress` — the
+canonical LangGraph / deer-flow bug, complementing the fuzzy `similar_input`
+rule; and the **empty-result loop** (`empty_result_loop`) flags a tool that
+returns empty / "no results" ≥3× (only judging completed calls that carry an
+output, so a missing output never false-positives).
 
 ## Now → next (the immediate backlog)
 
@@ -76,9 +79,6 @@ Also in V1:
 - **Run comparison** — diff two runs (before/after a prompt or retry-rule change).
 - **Simple graph view** — agent/tool transition graph, *after* the timeline.
 - **Cost-budget alerts** — warn when a run crosses a configured $ ceiling.
-- **Empty/ambiguous-result loop** — flag a tool that returns empty / "no results"
-  repeatedly (a documented root cause of reasoning loops); needs output
-  inspection. The natural follow-on now that the exact-repeat rule has shipped.
 
 ## V2 — smarter diagnosis
 

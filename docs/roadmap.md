@@ -1,7 +1,7 @@
 # Roadmap
 
 The MVP is feature-complete: a zero-dep SDK, a FastAPI + SQLite backend, a CLI, a
-React dashboard, live SSE streaming, eight rule-based [loop detectors](detectors.md),
+React dashboard, live SSE streaming, nine rule-based [loop detectors](detectors.md),
 universal [OpenTelemetry ingestion](opentelemetry.md), and a
 [LangGraph adapter](langgraph.md).
 

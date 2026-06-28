@@ -10,10 +10,11 @@ Rules:
   2. repeated_tool_call_similar_input — same tool >= 3x with near-identical input
   3. repeated_tool_call_exact_input   — same tool >= 3x with byte-identical input
   4. no_progress                      — tool repeats with no state/memory update
-  5. retry_storm                      — retry_triggered >= 3x in the run
-  6. long_running_step                — a step over the latency threshold
-  7. cost_spike                       — one event dominating run cost
-  8. handoff_bounce                   — two agents handing off back and forth
+  5. empty_result_loop                — a tool returns empty / "no results" repeatedly
+  6. retry_storm                      — retry_triggered >= 3x in the run
+  7. long_running_step                — a step over the latency threshold
+  8. cost_spike                       — one event dominating run cost
+  9. handoff_bounce                   — two agents handing off back and forth
 """
 
 from __future__ import annotations
@@ -44,6 +45,40 @@ def _norm(input_json: str | None) -> str:
         return json.dumps(json.loads(input_json), sort_keys=True)
     except (json.JSONDecodeError, TypeError):
         return input_json
+
+
+def _load(output_json: str | None) -> object:
+    try:
+        return json.loads(output_json)
+    except (json.JSONDecodeError, TypeError):
+        return output_json
+
+
+# Phrases a tool uses to say "I found nothing" — a documented cause of agents
+# looping on a dead end. Kept specific to avoid matching incidental text.
+_EMPTY_PHRASES = ("no result", "not found", "no match", "nothing found",
+                  "no data", "no documents", "0 results", "no records")
+
+
+def _empty_value(val: object) -> bool:
+    """True if a tool output carries no usable information."""
+    if val is None:
+        return True
+    if isinstance(val, str):
+        s = val.strip().lower()
+        return not s or any(p in s for p in _EMPTY_PHRASES)
+    if isinstance(val, dict):
+        if not val:
+            return True
+        # Unwrap the usual result envelopes before judging emptiness.
+        for k in ("results", "result", "value", "output", "data", "items",
+                  "matches", "hits", "documents", "rows"):
+            if k in val:
+                return _empty_value(val[k])
+        return False
+    if isinstance(val, (list, tuple)):
+        return len(val) == 0
+    return False
 
 
 # --- individual rules ------------------------------------------------------
@@ -149,6 +184,29 @@ def _no_progress(events):
     return out
 
 
+def _empty_result(events):
+    # A tool that keeps returning empty / "no results" is a documented cause of
+    # reasoning loops. Only judge completed calls that actually carry an output —
+    # a missing output means "unknown", not "empty", so it never false-positives.
+    groups: dict[str, list] = defaultdict(list)
+    for e in events:
+        if e["type"] == "tool_call_completed" and _tool(e) and e["output_json"] is not None:
+            groups[_tool(e)].append(e)
+    out = []
+    for t, evs in groups.items():
+        empties = [e for e in evs if _empty_value(_load(e["output_json"]))]
+        if len(empties) >= REPEAT_THRESHOLD:
+            out.append({
+                "type": "empty_result_loop", "severity": "warning",
+                "message": (f"'{t}' returned an empty or 'no results' response {len(empties)} "
+                            f"times. The agent is likely looping on a dead end — vary the query, "
+                            f"widen the search, or stop after N empty results."),
+                "details": {"tool": t, "count": len(empties)},
+                "event_id": empties[-1]["id"],
+            })
+    return out
+
+
 def _retry_storm(events):
     retries = [e for e in events if e["type"] == "retry_triggered"]
     if len(retries) >= RETRY_THRESHOLD:
@@ -222,8 +280,8 @@ def _handoff_bounce(events):
     }]
 
 
-_RULES = (_repeated_tool, _similar_input, _exact_repeat, _no_progress, _retry_storm,
-          _long_step, _cost_spike, _handoff_bounce)
+_RULES = (_repeated_tool, _similar_input, _exact_repeat, _no_progress, _empty_result,
+          _retry_storm, _long_step, _cost_spike, _handoff_bounce)
 
 
 # --- engine ----------------------------------------------------------------

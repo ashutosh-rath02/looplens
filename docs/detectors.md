@@ -4,7 +4,7 @@ Detection is **rule-based and transparent** — no black-box scoring. On every
 event the backend re-scans the run and raises (or updates) warnings. Each warning
 says what happened, why it matters, and what to try.
 
-## The eight rules
+## The nine rules
 
 | Warning | Fires when |
 | --- | --- |
@@ -12,6 +12,7 @@ says what happened, why it matters, and what to try.
 | `repeated_tool_call_similar_input` | same tool ≥3× with ≥85% similar input |
 | `repeated_tool_call_exact_input` | same tool ≥3× with **byte-identical** input — the highest-confidence repeat signal |
 | `no_progress` | a tool repeats with no `state_updated` / `memory_write` between calls |
+| `empty_result_loop` | a tool returns empty / "no results" ≥3× — the agent is looping on a dead end |
 | `retry_storm` | `retry_triggered` ≥3× in the run |
 | `long_running_step` | a step over 30s |
 | `cost_spike` | one event > 50% of run cost so far (above a $0.05 floor) |
@@ -31,6 +32,7 @@ and the score maps to a status:
 | `no_progress` | −30 |
 | `repeated_tool_call_exact_input` | −25 |
 | `repeated_tool_call_similar_input` | −20 |
+| `empty_result_loop` | −20 |
 | `retry_storm` | −20 |
 | `handoff_bounce` | −20 |
 | `repeated_tool_call` | −15 |

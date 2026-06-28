@@ -20,6 +20,7 @@ WARNING_PENALTIES: dict[str, int] = {
     "repeated_tool_call_exact_input": 25,
     "retry_storm": 20,
     "no_progress": 30,
+    "empty_result_loop": 20,
     "long_running_step": 10,
     "cost_spike": 15,
     "handoff_bounce": 20,

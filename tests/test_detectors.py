@@ -91,6 +91,36 @@ def test_no_handoff_bounce_for_linear_flow(client):
     assert "handoff_bounce" not in warning_types(client, "hl")
 
 
+def test_empty_result_loop_detected(client):
+    client.post("/api/runs", json={"id": "er", "name": "empty"})
+    for _ in range(3):
+        ev(client, "er", "tool_call_started", tool="search", input={"q": "x"})
+        ev(client, "er", "tool_call_completed", tool="search", output={"results": []})
+    assert "empty_result_loop" in warning_types(client, "er")
+
+
+def test_empty_result_loop_fires_on_no_results_phrase(client):
+    client.post("/api/runs", json={"id": "ep", "name": "phrase"})
+    for _ in range(3):
+        ev(client, "ep", "tool_call_completed", tool="lookup", output={"result": "No results found."})
+    assert "empty_result_loop" in warning_types(client, "ep")
+
+
+def test_no_empty_result_loop_when_outputs_have_content(client):
+    client.post("/api/runs", json={"id": "ec", "name": "content"})
+    for i in range(3):
+        ev(client, "ec", "tool_call_completed", tool="search", output={"results": [i, i + 1]})
+    assert "empty_result_loop" not in warning_types(client, "ec")
+
+
+def test_no_empty_result_loop_when_output_missing(client):
+    # No output captured -> "unknown", not "empty"; must not false-positive.
+    client.post("/api/runs", json={"id": "em", "name": "missing"})
+    for _ in range(4):
+        ev(client, "em", "tool_call_completed", tool="search")
+    assert "empty_result_loop" not in warning_types(client, "em")
+
+
 def test_no_progress_clears_when_state_updates(client):
     client.post("/api/runs", json={"id": "rp", "name": "progress"})
     for _ in range(4):
