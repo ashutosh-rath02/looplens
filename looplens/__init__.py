@@ -10,7 +10,7 @@ Public SDK surface (implemented in Phase 2):
 
 from __future__ import annotations
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 from .sdk import event, flush, observe, trace
 
