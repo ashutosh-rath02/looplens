@@ -117,7 +117,9 @@ export function eventColor(type: string): string {
   if (type.startsWith("tool_call")) return "text-sky-300";
   if (type.startsWith("retry")) return "text-amber-300";
   if (type.startsWith("handoff")) return "text-fuchsia-300";
-  if (type.startsWith("run_") || type.startsWith("agent_")) return "text-slate-400";
+  if (type.startsWith("guardrail")) return "text-orange-300";
+  if (type.startsWith("agent_")) return "text-cyan-300";
+  if (type.startsWith("run_")) return "text-slate-400";
   if (type.startsWith("state_") || type.startsWith("memory_")) return "text-emerald-300";
   return "text-slate-300";
 }

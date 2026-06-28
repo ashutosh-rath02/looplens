@@ -3,6 +3,14 @@
 All notable changes to LoopLens are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Changed
+
+- Distinct timeline colors for `agent_*` (cyan), `handoff_*` (fuchsia), and
+  `guardrail_triggered` (orange) events, so adapter-sourced multi-agent runs read
+  clearly at a glance.
+
 ## 0.6.0
 
 ### Added
