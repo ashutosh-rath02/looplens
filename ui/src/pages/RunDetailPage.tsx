@@ -6,6 +6,7 @@ import MetricsBar from "../components/MetricsBar";
 import Timeline from "../components/Timeline";
 import WarningCard from "../components/WarningCard";
 import EventDrawer from "../components/EventDrawer";
+import Diagnosis from "../components/Diagnosis";
 
 export default function RunDetailPage() {
   const { runId } = useParams<{ runId: string }>();
@@ -74,6 +75,10 @@ export default function RunDetailPage() {
             {health || "—"}
           </span>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <Diagnosis warnings={warnings} metrics={metrics} status={status} />
       </div>
 
       <div className="mb-5">

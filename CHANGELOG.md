@@ -7,6 +7,10 @@ All notable changes to LoopLens are documented here. This project follows
 
 ### Added
 
+- **Run diagnosis headline.** The run detail view now leads with a one-line,
+  plain-language verdict synthesised from the warnings — e.g. *"Likely stuck —
+  'search' repeated 4× with no progress. (+4 more signals)"* — or a green "No
+  loops detected" when healthy.
 - **Jump from a warning to its culprit event.** Loop warnings in the run detail
   view are now clickable — selecting one highlights and scrolls to the offending
   event in the timeline and opens its detail drawer, answering "where do I fix

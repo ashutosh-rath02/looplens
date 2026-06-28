@@ -1,5 +1,72 @@
 // Small formatting + color helpers shared across the UI.
 
+import { Metrics, WarningOut } from "./api";
+
+// Most-diagnostic warning first — used to pick the headline cause.
+const WARNING_PRIORITY = [
+  "no_progress",
+  "empty_result_loop",
+  "repeated_tool_call_exact_input",
+  "repeated_tool_call_similar_input",
+  "repeated_tool_call",
+  "handoff_bounce",
+  "retry_storm",
+  "cost_budget_exceeded",
+  "cost_spike",
+  "long_running_step",
+];
+
+function warningPhrase(w: WarningOut): string {
+  const d = (w.details ?? {}) as Record<string, any>;
+  const tool = d.tool as string | undefined;
+  const count = d.count as number | undefined;
+  switch (w.type) {
+    case "no_progress":
+      return `'${tool}' repeated ${count}× with no progress`;
+    case "empty_result_loop":
+      return `'${tool}' returned no results ${count}×`;
+    case "repeated_tool_call_exact_input":
+      return `'${tool}' called ${count}× with identical input`;
+    case "repeated_tool_call_similar_input":
+      return `'${tool}' called ${count}× with near-identical input`;
+    case "repeated_tool_call":
+      return `'${tool}' called ${count}× in a loop`;
+    case "handoff_bounce":
+      return `agents ${((d.agents as string[]) ?? []).join(" / ")} handed off ${d.count}× without resolving`;
+    case "retry_storm":
+      return `${d.count ?? "several"} retries fired without changing strategy`;
+    case "cost_budget_exceeded":
+      return "run cost crossed the configured budget";
+    case "cost_spike":
+      return "one step dominated the run's cost";
+    case "long_running_step":
+      return "a step ran far longer than expected";
+    default:
+      return warningTitle(w.type).toLowerCase();
+  }
+}
+
+export function diagnose(
+  warnings: WarningOut[],
+  metrics: Metrics | null,
+  status: string | null
+): { text: string; tone: "good" | "warn" | "bad" } | null {
+  if (!metrics) return null;
+  if (status === "failed") return { text: "This run failed.", tone: "bad" };
+  if (warnings.length === 0) {
+    return { text: "No loops detected — this run looks healthy.", tone: "good" };
+  }
+  const rank = (t: string) => {
+    const i = WARNING_PRIORITY.indexOf(t);
+    return i === -1 ? 99 : i;
+  };
+  const primary = [...warnings].sort((a, b) => rank(a.type) - rank(b.type))[0];
+  const more = warnings.length - 1;
+  const suffix = more > 0 ? ` (+${more} more signal${more > 1 ? "s" : ""})` : "";
+  const tone = metrics.loop_health_status === "Likely stuck" ? "bad" : "warn";
+  return { text: `${metrics.loop_health_status} — ${warningPhrase(primary)}.${suffix}`, tone };
+}
+
 const WARNING_TITLES: Record<string, string> = {
   repeated_tool_call: "Repeated tool call",
   repeated_tool_call_similar_input: "Repeated tool call · similar input",
