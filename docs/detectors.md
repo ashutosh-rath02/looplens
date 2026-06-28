@@ -58,3 +58,6 @@ and the score maps to a status:
 - These rules work the same whether events arrive via
   [OpenTelemetry](opentelemetry.md), the [LangGraph adapter](langgraph.md), or
   the [manual SDK](sdk.md).
+- In the dashboard, **click a warning to jump to its culprit event** — it
+  highlights and scrolls the timeline to the offending event and opens its
+  detail drawer.

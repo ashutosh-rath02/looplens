@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { EventOut } from "../api";
 import { eventColor } from "../lib";
 
@@ -9,6 +10,12 @@ interface Props {
 }
 
 export default function Timeline({ events, warnEventIds, selectedId, onSelect }: Props) {
+  const selectedRef = useRef<HTMLButtonElement>(null);
+  // Bring the selected row into view — e.g. after jumping from a warning.
+  useEffect(() => {
+    selectedRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [selectedId]);
+
   if (events.length === 0) {
     return <div className="text-slate-500 text-sm py-8 text-center">Waiting for events…</div>;
   }
@@ -20,6 +27,7 @@ export default function Timeline({ events, warnEventIds, selectedId, onSelect }:
         return (
           <button
             key={e.event_id}
+            ref={selectedId === e.event_id ? selectedRef : undefined}
             onClick={() => onSelect(e)}
             className={`w-full text-left flex items-center gap-3 px-3 py-2 hover:bg-edge/30 ${
               selectedId === e.event_id ? "bg-edge/50" : ""

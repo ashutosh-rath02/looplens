@@ -39,6 +39,14 @@ export default function RunDetailPage() {
     () => new Set(warnings.map((w) => w.event_id).filter(Boolean) as string[]),
     [warnings]
   );
+  const eventsById = useMemo(
+    () => new Map(events.map((e) => [e.event_id, e])),
+    [events]
+  );
+  const jumpToEvent = (eventId: string) => {
+    const e = eventsById.get(eventId);
+    if (e) setSelected(e); // highlights + scrolls the timeline, opens the drawer
+  };
   const health = status === "failed" ? "Failed" : metrics?.loop_health_status;
 
   return (
@@ -96,7 +104,11 @@ export default function RunDetailPage() {
           ) : (
             <div className="space-y-2">
               {warnings.map((w) => (
-                <WarningCard key={w.warning_id} w={w} />
+                <WarningCard
+                  key={w.warning_id}
+                  w={w}
+                  onJump={w.event_id ? () => jumpToEvent(w.event_id!) : undefined}
+                />
               ))}
             </div>
           )}

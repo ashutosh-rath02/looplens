@@ -3,6 +3,15 @@
 All notable changes to LoopLens are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+
+- **Jump from a warning to its culprit event.** Loop warnings in the run detail
+  view are now clickable — selecting one highlights and scrolls to the offending
+  event in the timeline and opens its detail drawer, answering "where do I fix
+  it?" in one click.
+
 ## 0.5.0
 
 ### Added
