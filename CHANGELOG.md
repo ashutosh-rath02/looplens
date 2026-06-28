@@ -3,6 +3,15 @@
 All notable changes to LoopLens are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+
+- **CrewAI adapter** (`looplens.integrations.crewai`) — a `BaseEventListener`
+  that maps crew bus events to LoopLens events and emits `handoff_started` when
+  control moves to a different agent, so a stuck crew trips `handoff_bounce`.
+  Install with `pip install "looplens[crewai]"`.
+
 ## 0.4.0
 
 ### Added

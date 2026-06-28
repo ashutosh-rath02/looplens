@@ -33,6 +33,9 @@ langgraph = [
 openai-agents = [
     "openai-agents>=0.1",
 ]
+crewai = [
+    "crewai>=1.0",
+]
 # Universal OpenTelemetry ingestion: lets any framework with an OTLP exporter
 # stream to /v1/traces. Only needed to decode OTLP/protobuf; OTLP/JSON works
 # with no extra dependency.

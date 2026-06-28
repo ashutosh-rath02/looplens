@@ -214,6 +214,20 @@ instrument(name="my-agents-app")   # then use Runner.run(...) as usual
 Needs `pip install "looplens[openai-agents]"`. See the
 [docs](https://ashutosh-rath02.github.io/looplens/openai-agents/).
 
+### 4. CrewAI adapter
+
+A `BaseEventListener` that captures crew events and emits a handoff when control
+moves to a different agent (so a stuck crew trips `handoff_bounce`):
+
+```python
+from looplens.integrations.crewai import instrument
+
+instrument(name="my-crew")   # then crew.kickoff() as usual
+```
+
+Needs `pip install "looplens[crewai]"`. See the
+[docs](https://ashutosh-rath02.github.io/looplens/crewai/).
+
 ## Build status
 
 This repo is being built phase by phase (see `PRD.md` section 24).

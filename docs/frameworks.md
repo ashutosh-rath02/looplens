@@ -42,7 +42,14 @@ handoffs and guardrail trips that the generic OTel path only approximates.
 
 → [OpenAI Agents SDK adapter](openai-agents.md)
 
-### 4. Manual SDK — full control
+### 4. CrewAI adapter — native crew delegation
+
+A `BaseEventListener` that captures crew events and emits a handoff when control
+moves to a different agent — so a stuck crew trips `handoff_bounce`.
+
+→ [CrewAI adapter](crewai.md)
+
+### 5. Manual SDK — full control
 
 Call `trace()` / `event()` / `@observe` yourself. Best for hand-rolled loops or
 when you want to emit exactly the events you care about.
@@ -56,6 +63,7 @@ when you want to emit exactly the events you care about.
 | Any framework with an OpenInference/OpenLLMetry instrumentor | **OpenTelemetry** |
 | A LangGraph or LangChain app | **LangGraph adapter** (or OpenTelemetry) |
 | An OpenAI Agents SDK app | **OpenAI Agents adapter** (native handoffs/guardrails) |
+| A CrewAI crew | **CrewAI adapter** (native delegation handoffs) |
 | A hand-rolled loop, or a framework with no instrumentor | **Manual SDK** |
 
 All of these funnel through the **same** ingestion pipeline, so the

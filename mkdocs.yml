@@ -45,6 +45,7 @@ nav:
       - OpenTelemetry (universal): opentelemetry.md
       - LangGraph adapter: langgraph.md
       - OpenAI Agents SDK adapter: openai-agents.md
+      - CrewAI adapter: crewai.md
       - Manual SDK: sdk.md
   - How it works:
       - Architecture: architecture.md

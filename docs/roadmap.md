@@ -16,6 +16,8 @@ The highlights:
 - **LangGraph / LangChain adapter** for tight in-process capture.
 - **OpenAI Agents SDK adapter** — a native `TracingProcessor` that captures
   handoffs and guardrails, not just LLM/tool calls.
+- **CrewAI adapter** — a `BaseEventListener` that captures crew delegation as
+  handoffs, so a stuck crew trips `handoff_bounce`.
 - **Handoff capture** — `transfer_to_<agent>` tool calls become
   `handoff_started` events, so `handoff_bounce` fires through both paths.
 - Three more detectors — **exact tool+args repeat**, **empty-result loop**, and
@@ -27,10 +29,9 @@ The highlights:
 
 ## Next
 
-1. **CrewAI** adapter — crew handoffs and task timelines.
+1. **AutoGen** and **Pydantic AI** adapters.
 2. **Simple graph view** — an agent/tool transition graph, after the timeline.
-3. **AutoGen** and **Pydantic AI** adapters.
-4. **Arbitrary node-to-node handoffs** — beyond the transfer-tool convention,
+3. **Arbitrary node-to-node handoffs** — beyond the transfer-tool convention,
    without flagging healthy loops.
 
 ## Later
