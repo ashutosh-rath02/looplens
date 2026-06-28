@@ -11,6 +11,8 @@ export interface RunSummary {
   total_tokens: number;
   event_count: number;
   warning_count: number;
+  health_score: number;
+  loop_health_status: string;
 }
 
 export interface RunOut extends RunSummary {

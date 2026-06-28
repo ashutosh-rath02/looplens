@@ -60,6 +60,18 @@ def _health(score: int, run_status: str | None) -> str:
     return "Likely stuck"
 
 
+def score_health(warnings, run_status: str | None) -> tuple[int, str]:
+    """Health score (0–100) and status from a run's warnings + status alone —
+    no event scan, so it's cheap enough to compute for every row in the list."""
+    score = 100
+    for w in warnings:
+        score -= WARNING_PENALTIES.get(w["type"], 0)
+    if run_status == "failed":
+        score -= FAILED_RUN_PENALTY
+    score = max(0, min(100, score))
+    return score, _health(score, run_status)
+
+
 def compute_metrics(conn: sqlite3.Connection, run: sqlite3.Row) -> MetricsOut:
     run_id = run["id"]
     events = db.list_events(conn, run_id)
@@ -73,12 +85,7 @@ def compute_metrics(conn: sqlite3.Connection, run: sqlite3.Row) -> MetricsOut:
     )
     agents = Counter(e["agent"] for e in events if e["agent"])
 
-    score = 100
-    for w in warnings:
-        score -= WARNING_PENALTIES.get(w["type"], 0)
-    if run["status"] == "failed":
-        score -= FAILED_RUN_PENALTY
-    score = max(0, min(100, score))
+    score, status = score_health(warnings, run["status"])
 
     return MetricsOut(
         run_id=run_id,
@@ -97,5 +104,5 @@ def compute_metrics(conn: sqlite3.Connection, run: sqlite3.Row) -> MetricsOut:
         most_active_agent=agents.most_common(1)[0][0] if agents else None,
         warnings_count=len(warnings),
         health_score=score,
-        loop_health_status=_health(score, run["status"]),
+        loop_health_status=status,
     )

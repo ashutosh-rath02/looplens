@@ -8,7 +8,7 @@ from fastapi.responses import StreamingResponse
 from .. import __version__
 from . import db
 from .ingest import store_event
-from .metrics import compute_metrics
+from .metrics import compute_metrics, score_health
 from .models import EventIn, EventOut, MetricsOut, RunCreate, RunOut, RunSummary, WarningOut
 from .websocket import sse_run_stream
 
@@ -43,7 +43,9 @@ def list_runs() -> list[RunSummary]:
         for row in rows:
             summary = RunSummary.from_row(row)
             summary.event_count = db.count_events(conn, row["id"])
-            summary.warning_count = db.count_warnings(conn, row["id"])
+            warnings = db.list_warnings(conn, row["id"])
+            summary.warning_count = len(warnings)
+            summary.health_score, summary.loop_health_status = score_health(warnings, row["status"])
             out.append(summary)
     return out
 

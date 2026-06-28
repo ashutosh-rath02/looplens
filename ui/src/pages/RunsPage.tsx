@@ -61,10 +61,10 @@ export default function RunsPage() {
                   <td className="px-4 py-3">
                     <span
                       className={`text-xs px-2 py-0.5 rounded border ${healthClasses(
-                        r.status === "failed" ? "Failed" : undefined
+                        r.loop_health_status
                       )}`}
                     >
-                      {r.status === "failed" ? "Failed" : r.status || "—"}
+                      {r.loop_health_status}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right tabular-nums">{r.event_count}</td>

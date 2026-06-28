@@ -53,10 +53,12 @@ class RunOut(BaseModel):
 
 
 class RunSummary(RunOut):
-    """Run plus cheap counts for the runs-list screen."""
+    """Run plus cheap counts and loop health for the runs-list screen."""
 
     event_count: int = 0
     warning_count: int = 0
+    health_score: int = 100
+    loop_health_status: str = "Healthy"
 
 
 # --- events ----------------------------------------------------------------

@@ -172,6 +172,17 @@ def test_no_cost_budget_when_unset(client):
     assert "cost_budget_exceeded" not in warning_types(client, "cn")
 
 
+def test_runs_list_includes_loop_health(client):
+    client.post("/api/runs", json={"id": "lh", "name": "loop"})
+    for _ in range(4):
+        ev(client, "lh", "tool_call_started", tool="web_search", input={"q": "same"})
+        ev(client, "lh", "tool_call_completed", tool="web_search")
+    summary = next(s for s in client.get("/api/runs").json() if s["id"] == "lh")
+    assert summary["warning_count"] >= 1
+    assert summary["health_score"] < 100
+    assert summary["loop_health_status"] != "Healthy"
+
+
 def test_healthy_run_has_no_warnings(client):
     client.post("/api/runs", json={"id": "r5", "name": "ok"})
     ev(client, "r5", "run_started")

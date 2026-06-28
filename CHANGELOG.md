@@ -5,6 +5,12 @@ All notable changes to LoopLens are documented here. This project follows
 
 ## Unreleased
 
+### Added
+
+- **Loop health on the runs list.** The runs list now shows each run's loop
+  health (Healthy / Warning / Likely stuck / Failed), so you can spot a stuck or
+  looping run at a glance without opening it.
+
 ### Changed
 
 - Distinct timeline colors for `agent_*` (cyan), `handoff_*` (fuchsia), and
