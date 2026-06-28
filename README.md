@@ -228,18 +228,23 @@ instrument(name="my-crew")   # then crew.kickoff() as usual
 Needs `pip install "looplens[crewai]"`. See the
 [docs](https://ashutosh-rath02.github.io/looplens/crewai/).
 
-## Build status
+## What's included
 
-This repo is being built phase by phase (see `PRD.md` section 24).
+Published on PyPI ([`looplens`](https://pypi.org/project/looplens/)) and complete
+end to end:
 
-- [x] **Phase 0** — repo scaffold, packaging, config
-- [x] **Phase 1** — FastAPI backend + SQLite + API routes + metrics
-- [x] **Phase 2** — Python SDK (`trace` / `event` / `@observe`, background sender, JSONL fallback)
-- [x] **Phase 3** — CLI (`init / server / ui / dev / watch / import / export / demo`)
-- [x] **Phase 6** — loop detection rules (repeated tool, similar input, no-progress, retry storm, long step, cost spike)
-- [x] **Phase 4** — React UI (runs list, run detail, live timeline, metrics bar, warnings, event drawer)
-- [x] **Phase 5** — real-time streaming (SSE: live events + metrics + warnings)
-- [x] **Phase 7** — polish, examples, demo
+- **Zero-dependency SDK** — `trace()` / `event()` / `@observe`, background sender,
+  JSONL fallback.
+- **Backend** — FastAPI + SQLite, the loop detectors, metrics, and live SSE
+  streaming.
+- **CLI** — `init / server / ui / dev / watch / import / export / demo / doctor`.
+- **Dashboard** — React runs list, run detail, live timeline, metrics, warnings,
+  diagnosis headline, and run comparison.
+- **Capture** — universal OpenTelemetry ingestion plus native LangGraph, OpenAI
+  Agents SDK, and CrewAI adapters.
+
+See [`CHANGELOG.md`](CHANGELOG.md) for release history and
+[`ROADMAP.md`](ROADMAP.md) for what's next.
 
 ## Running from source
 
