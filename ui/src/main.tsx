@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import RunsPage from "./pages/RunsPage";
 import RunDetailPage from "./pages/RunDetailPage";
+import ComparePage from "./pages/ComparePage";
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -13,6 +14,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <RunsPage /> },
       { path: "runs/:runId", element: <RunDetailPage /> },
+      { path: "compare", element: <ComparePage /> },
     ],
   },
 ]);

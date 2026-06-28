@@ -18,6 +18,7 @@ LoopLens gives you:
 - retry and handoff tracking
 - token and cost metrics
 - loop warnings (repeated tool, no-progress, retry storm, cost spike, …)
+- side-by-side run comparison (before/after a prompt or retry-rule change)
 - JSONL import/export
 - a local-first UI — no login, no cloud, no API key
 

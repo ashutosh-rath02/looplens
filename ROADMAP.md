@@ -78,9 +78,12 @@ Next, in order:
 total cost crosses it raises a `cost_budget_exceeded` warning — catches a runaway
 loop burning spend. Opt-in, so it's a no-op until configured.
 
+**Shipped — run comparison.** A `/compare` view diffs two runs side by side —
+health, metrics (with coloured deltas), and which loop warnings each run raised —
+for before/after a prompt or retry-rule change.
+
 Also in V1:
 
-- **Run comparison** — diff two runs (before/after a prompt or retry-rule change).
 - **Simple graph view** — agent/tool transition graph, *after* the timeline.
 
 ## V2 — smarter diagnosis

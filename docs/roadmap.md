@@ -18,6 +18,8 @@ The highlights:
   `handoff_started` events, so `handoff_bounce` fires through both paths.
 - Three more detectors — **exact tool+args repeat**, **empty-result loop**, and
   opt-in **cost-budget alerts** (`LOOPLENS_COST_BUDGET`).
+- **Run comparison** — a `/compare` view that diffs two runs side by side
+  (health, metrics with coloured deltas, and each run's loop warnings).
 - **PyPI release** with a UI-bundled wheel, CI matrix (3.10–3.13), `looplens
   doctor`, and browser auto-open.
 
@@ -26,7 +28,7 @@ The highlights:
 1. **OpenAI Agents SDK** adapter — consume its tracing hooks directly, for richer
    signal than the generic OTel spans.
 2. **CrewAI** adapter — crew handoffs and task timelines.
-3. **Run comparison** — diff two runs before/after a prompt or retry-rule change.
+3. **Simple graph view** — an agent/tool transition graph, after the timeline.
 4. **Arbitrary node-to-node handoffs** — beyond the transfer-tool convention,
    without flagging healthy loops.
 

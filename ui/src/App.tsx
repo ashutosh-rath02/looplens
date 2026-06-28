@@ -12,6 +12,14 @@ export default function App() {
             </span>
           </Link>
           <span className="text-xs text-slate-500">Chrome DevTools for AI agent loops</span>
+          <nav className="ml-auto flex items-center gap-4 text-sm">
+            <Link to="/" className="text-slate-400 hover:text-slate-100">
+              Runs
+            </Link>
+            <Link to="/compare" className="text-slate-400 hover:text-slate-100">
+              Compare
+            </Link>
+          </nav>
         </div>
       </header>
       <main className="flex-1 max-w-6xl w-full mx-auto px-5 py-6">
