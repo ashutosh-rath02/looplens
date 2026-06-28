@@ -3,6 +3,20 @@
 All notable changes to LoopLens are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.3.0
+
+### Added
+
+- **Run comparison** (`/compare`) — diff two runs side by side: health badges, a
+  metrics table with colour-coded deltas (green when a metric moves the better
+  way), and which loop warnings each run raised. The before/after view for a
+  prompt or retry-rule change.
+
+### Changed
+
+- The dashboard now uses the **full viewport width** instead of a centered
+  ~1152px column.
+
 ## 0.2.0
 
 The "works with any framework" release. Capture is no longer manual-only, and the
