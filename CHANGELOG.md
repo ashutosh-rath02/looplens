@@ -3,6 +3,17 @@
 All notable changes to LoopLens are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.7.2
+
+Docs / launch readiness — no functional changes.
+
+### Changed
+
+- README "Build status" (work-in-progress phase checklist) reframed to a concise
+  "What's included" summary, so the project page reads as shipped. This release
+  syncs that to the PyPI project page.
+- Expanded `LAUNCH.md` into a full launch guide (steps, channel posts, FAQ).
+
 ## 0.7.1
 
 Launch-readiness pass — no functional changes.
