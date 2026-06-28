@@ -3,6 +3,20 @@
 All notable changes to LoopLens are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.7.1
+
+Launch-readiness pass — no functional changes.
+
+### Added
+
+- `LICENSE` file (MIT) and PyPI trove classifiers (license, supported Python
+  versions, topic, development status).
+
+### Fixed
+
+- The README demo GIF now uses an absolute URL, so it renders on the PyPI
+  project page (relative paths don't).
+
 ## 0.7.0
 
 ### Added

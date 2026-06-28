@@ -29,7 +29,7 @@ metrics climb and LoopLens flags **Repeated tool call** and **No-progress loop**
 — the warning counts track the repeat count in real time, and the health score
 drops to *Warning*.
 
-![LoopLens detecting a loop live](docs/media/looplens-live-loop-detection.gif)
+![LoopLens detecting a loop live](https://raw.githubusercontent.com/ashutosh-rath02/looplens/main/docs/media/looplens-live-loop-detection.gif)
 
 ## Drop it into any project
 
