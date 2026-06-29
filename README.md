@@ -237,11 +237,13 @@ end to end:
   JSONL fallback.
 - **Backend** — FastAPI + SQLite, the loop detectors, metrics, and live SSE
   streaming.
-- **CLI** — `init / server / ui / dev / watch / import / export / demo / doctor`.
+- **CLI** — `init / server / ui / dev / watch / import / export / demo / doctor / mcp`.
 - **Dashboard** — React runs list, run detail, live timeline, metrics, warnings,
   diagnosis headline, and run comparison.
 - **Capture** — universal OpenTelemetry ingestion plus native LangGraph, OpenAI
   Agents SDK, and CrewAI adapters.
+- **MCP server** — `looplens mcp` exposes the loop verdicts to an AI coding agent
+  (Claude Code, Cursor, …) so it can ask "did my last run loop, and where?".
 
 See [`CHANGELOG.md`](CHANGELOG.md) for release history and
 [`ROADMAP.md`](ROADMAP.md) for what's next.

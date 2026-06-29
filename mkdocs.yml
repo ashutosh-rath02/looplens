@@ -52,6 +52,7 @@ nav:
       - Loop detectors: detectors.md
   - Reference:
       - CLI: cli.md
+      - MCP server: mcp.md
       - Examples: examples.md
   - Roadmap: roadmap.md
 

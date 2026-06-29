@@ -12,6 +12,7 @@ The CLI ships with the `[server]` extra. Run `looplens --help` for the full list
 | `looplens import <file.jsonl>` | Import a JSONL trace file into the dashboard. |
 | `looplens export <run_id> [-o file]` | Export one run's events as JSONL. |
 | `looplens watch <dir>` | Watch a directory of JSONL trace files and stream them in live. |
+| `looplens mcp` | Run the [MCP server](mcp.md) (stdio) so an AI coding agent can query loop health. Needs `pip install "looplens[mcp]"`. |
 
 ## `looplens doctor`
 
