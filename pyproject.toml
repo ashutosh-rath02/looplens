@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "looplens"
-version = "0.7.2"
+version = "0.8.0"
 description = "Local-first real-time debugger for AI agent loops — Chrome DevTools for agent loops."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -48,6 +48,13 @@ openai-agents = [
 crewai = [
     "crewai>=1.0",
 ]
+# MCP server: exposes loop-health data over the Model Context Protocol so an AI
+# coding agent (Claude Code, Cursor, …) can query your agent's loops. Reuses the
+# server's storage/scoring, so it pulls in the [server] stack.
+mcp = [
+    "looplens[server]",
+    "mcp>=1.2",
+]
 # Universal OpenTelemetry ingestion: lets any framework with an OTLP exporter
 # stream to /v1/traces. Only needed to decode OTLP/protobuf; OTLP/JSON works
 # with no extra dependency.
@@ -64,6 +71,8 @@ dev = [
     "opentelemetry-proto>=1.0",
     # OpenAI Agents SDK, so CI exercises the agents adapter mapping.
     "openai-agents>=0.1",
+    # MCP SDK, so CI can build/exercise the MCP server.
+    "mcp>=1.2",
 ]
 
 [project.scripts]

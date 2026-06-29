@@ -322,6 +322,19 @@ def _build_app():
         typer.echo("All checks passed." if ok else "Some checks failed.")
         raise typer.Exit(code=0 if ok else 1)
 
+    @app.command()
+    def mcp() -> None:
+        """Run the LoopLens MCP server (stdio) so an AI coding agent can query
+        loop health. Reads the same local store as the dashboard; needs
+        `pip install 'looplens[mcp]'`."""
+        from .mcp import run_mcp
+
+        try:
+            run_mcp()
+        except ModuleNotFoundError as exc:
+            typer.echo(str(exc))
+            raise typer.Exit(code=1)
+
     return app
 
 
