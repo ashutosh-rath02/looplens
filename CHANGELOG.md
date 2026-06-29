@@ -3,6 +3,19 @@
 All notable changes to LoopLens are documented here. This project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.8.0
+
+### Added
+
+- **MCP server** (`looplens.mcp`) — exposes LoopLens's loop-health data over the
+  Model Context Protocol, so an AI coding agent (Claude Code, Cursor, Windsurf,
+  …) can ask *"did my last agent run loop, and where do I fix it?"* without
+  leaving the editor. Run it with `looplens mcp` (stdio). It is read-only and
+  reads the same local SQLite store as the dashboard, reusing the same health
+  scoring and verdict — so the MCP answer matches the UI. Tools:
+  `list_runs`, `latest_run_diagnosis`, `get_run_diagnosis`, `get_run_warnings`,
+  `get_run_metrics`, `get_run_events`. Install with `pip install "looplens[mcp]"`.
+
 ## 0.7.2
 
 Docs / launch readiness — no functional changes.
